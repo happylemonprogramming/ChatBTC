@@ -20,10 +20,10 @@ phone number->twilio->heroku
 
 from flask import Flask, request, redirect, render_template, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
-import os
+import openai
+import qrcode
 
 import os
-import openai
 import requests
 import json
 
@@ -67,6 +67,21 @@ def sms_reply():
         print(response.json()['payment_request'])
         lnaddress = str(response.json()['payment_request'])
         reply = resp.message(lnaddress)
+
+        # Attempt to send QR code without saving media image
+        def QR_Code(data):
+            # Generate QR Code
+            img = qrcode.make(data)
+            imgpath = "qrcode.png"
+            img.save(imgpath)
+
+            # Read the image file as binary data
+            with open(imgpath, 'rb') as f:
+                image_data = f.read()
+            return image_data
+
+        binaryimagedata = QR_Code(lnaddress)
+        return binaryimagedata
 
     else:
         """Send a dynamic reply to an incoming text message"""
