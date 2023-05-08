@@ -72,22 +72,22 @@ def sms_reply():
 
         # Create QR Code
         def QR_Code(data):
-            # # Generate QR Code
-            # img = qrcode.make(data)
-            # imgpath = "qrcode.png"
-            # img.save(imgpath)
-
-            # # Read the image file as binary data
-            # with open(imgpath, 'rb') as f:
-            #     image_data = f.read()
-
             # Generate QR Code
             img = qrcode.make(data)
+            imgpath = "qrcode.png"
+            img.save(imgpath)
 
-            # Write the image data to a binary buffer
-            buf = io.BytesIO()
-            img.save(buf, format='PNG')
-            image_data = buf.getvalue()
+            # Read the image file as binary data
+            with open(imgpath, 'rb') as f:
+                image_data = f.read()
+
+            # # Generate QR Code
+            # img = qrcode.make(data)
+
+            # # Write the image data to a binary buffer
+            # buf = io.BytesIO()
+            # img.save(buf, format='PNG')
+            # image_data = buf.getvalue()
             return image_data
 
         # Convert binary to URI that can be referenced as a HTML src
