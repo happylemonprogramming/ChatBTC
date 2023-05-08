@@ -24,8 +24,11 @@ import os
 
 import os
 import openai
+import requests
+import json
 
 openai.api_key = os.environ["openaiapikey"]
+lnbitsapikey = os.environ["lnbitsapikey"]
 
 app = Flask(__name__)
 # Should be an environmental variable
@@ -33,37 +36,64 @@ app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
-    """Send a dynamic reply to an incoming text message"""
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     print(body)
+    """Generate a lightning invoice"""
+    if body.isdigit():
+        # Create receive address
+        url = 'https://legend.lnbits.com/api/v1/payments'
+        api_key = lnbitsapikey
+        amount = body # replace <int> with the actual integer value
+        memo = 'bet' # replace <string> with the actual string value
 
-    # AI integration
-    output = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": body}
-        # TODO consider recursive calls to the assistant that allows the assistant to have context
-        ]
-    )
+        data = {
+            'out': False,
+            'amount': amount,
+            'memo': memo
+        }
 
-    cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
-    print(f"Cost: ${cost}")
-    msg = output['choices'][0]['message']['content']
+        headers = {
+            'X-Api-Key': api_key,
+            'Content-type': 'application/json'
+        }
 
-    # Start our TwiML response
-    resp = MessagingResponse()
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        
+        # Start our TwiML response
+        resp = MessagingResponse()
 
-    # Add a message
-    reply = resp.message(msg)
+        # Add a message
+        reply = resp.message(response.json()['payment_request'])
 
-    # Add a picture message
-    reply.media(
-        "https://media2.giphy.com/media/xT0GqjBCkO9BEiSEOk/giphy.gif"
-    )
+    else:
+        """Send a dynamic reply to an incoming text message"""
+        # AI integration
+        output = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": body}
+            # TODO consider recursive calls to the assistant that allows the assistant to have context
+            ]
+        )
 
-    return str(resp)
+        cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
+        print(f"Cost: ${cost}")
+        msg = output['choices'][0]['message']['content']
+
+        # Start our TwiML response
+        resp = MessagingResponse()
+
+        # Add a message
+        reply = resp.message(msg)
+
+        # # Add a picture message (.jpg, .gif)
+        # reply.media(
+        #     "https://media2.giphy.com/media/xT0GqjBCkO9BEiSEOk/giphy.gif"
+        # )
+
+        return str(resp)
 
 if __name__ == "__main__":
     app.run(debug=True)
