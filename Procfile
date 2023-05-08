@@ -1,1 +1,1 @@
-web: gunicorn -t 600 API:app
+web: gunicorn -t 600 wagerme:app

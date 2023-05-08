@@ -40,6 +40,12 @@ def sms_reply():
         Example JSON
         JSON Body = {"name": "lemon", "tonality": "spicy", "influencer": "vanilla ice",
         "imgurl":"aws.lemonissosmart.com/img", "tags": "pickle bananas chimpanzees"}"""
+
+    """Send a dynamic reply to an incoming text message"""
+    # Get the message the user sent our Twilio number
+    body = request.values.get('Body', None)
+    print(body)
+
     # Start our TwiML response
     resp = MessagingResponse()
 
