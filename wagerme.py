@@ -68,20 +68,18 @@ def sms_reply():
         lnaddress = str(response.json()['payment_request'])
         reply = resp.message(lnaddress)
 
-        # Attempt to send QR code without saving media image
         def QR_Code(data):
             # Generate QR Code
             img = qrcode.make(data)
             imgpath = "qrcode.png"
             img.save(imgpath)
+            return imgpath
 
-            # Read the image file as binary data
-            with open(imgpath, 'rb') as f:
-                image_data = f.read()
-            return image_data
-
-        binaryimagedata = QR_Code(lnaddress)
-        return binaryimagedata
+        imgpath = QR_Code(lnaddress)
+        # Add a picture message (.jpg, .gif)
+        reply.media(
+            imgpath
+        )
 
     else:
         """Send a dynamic reply to an incoming text message"""
