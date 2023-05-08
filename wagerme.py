@@ -60,7 +60,7 @@ def sms_reply():
 
             response = requests.post(url, headers=headers, json=data)
             return response.json()
-        sats = usdtosats(69420)['sats']
+        sats = usdtosats(body)['sats']
 
         # Create receive address
         url = 'https://legend.lnbits.com/api/v1/payments'
