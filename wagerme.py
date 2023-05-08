@@ -95,7 +95,7 @@ def sms_reply():
         #     "https://media2.giphy.com/media/xT0GqjBCkO9BEiSEOk/giphy.gif"
         # )
 
-        return str(resp)
+    return str(resp)
 
 if __name__ == "__main__":
     app.run(debug=True)
