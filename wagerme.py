@@ -43,10 +43,29 @@ def sms_reply():
     print(body)
     """Generate a lightning invoice"""
     if body.isdigit():
+
+        # Conversion to USD
+        def usdtosats(amount):
+            url = 'https://legend.lnbits.com/api/v1/conversion'
+
+            headers = {
+                'Content-Type': 'application/json'
+            }
+
+            data = {
+                'from': 'sat',
+                'amount': amount,
+                'to': 'usd'
+            }
+
+            response = requests.post(url, headers=headers, json=data)
+            return response.json()
+        sats = usdtosats(69420)['sats']
+
         # Create receive address
         url = 'https://legend.lnbits.com/api/v1/payments'
         api_key = lnbitsapikey
-        amount = body # replace <int> with the actual integer value
+        amount = sats # replace <int> with the actual integer value
         memo = 'bet' # replace <string> with the actual string value
 
         data = {
@@ -70,45 +89,45 @@ def sms_reply():
         lnaddress = str(response.json()['payment_request'])
         reply = resp.message(lnaddress)
 
-        # Create QR Code
-        def QR_Code(data):
-            # Generate QR Code
-            img = qrcode.make(data)
-            imgpath = "qrcode.png"
-            img.save(imgpath)
+        # # Create QR Code
+        # def QR_Code(data):
+        #     # Generate QR Code
+        #     img = qrcode.make(data)
+        #     imgpath = "qrcode.png"
+        #     img.save(imgpath)
 
-            # Read the image file as binary data
-            with open(imgpath, 'rb') as f:
-                image_data = f.read()
+        #     # Read the image file as binary data
+        #     with open(imgpath, 'rb') as f:
+        #         image_data = f.read()
 
-            # # Generate QR Code
-            # img = qrcode.make(data)
+        #     # # Generate QR Code
+        #     # img = qrcode.make(data)
 
-            # # Write the image data to a binary buffer
-            # buf = io.BytesIO()
-            # img.save(buf, format='PNG')
-            # image_data = buf.getvalue()
-            return image_data
+        #     # # Write the image data to a binary buffer
+        #     # buf = io.BytesIO()
+        #     # img.save(buf, format='PNG')
+        #     # image_data = buf.getvalue()
+        #     return image_data
 
-        # Convert binary to URI that can be referenced as a HTML src
-        def binary_to_webaddress(binary):
-            # Encode the image data as base64
-            encoded_image = base64.b64encode(binary).decode('utf-8')
+        # # Convert binary to URI that can be referenced as a HTML src
+        # def binary_to_webaddress(binary):
+        #     # Encode the image data as base64
+        #     encoded_image = base64.b64encode(binary).decode('utf-8')
 
-            # Create a data URI scheme for the image
-            data_uri = 'data:image/png;base64,' + encoded_image
+        #     # Create a data URI scheme for the image
+        #     data_uri = 'data:image/png;base64,' + encoded_image
 
-            # Return the data URI scheme
-            return data_uri
+        #     # Return the data URI scheme
+        #     return data_uri
 
-        # Execute functions
-        binary = QR_Code(lnaddress)
-        uri = binary_to_webaddress(binary)
+        # # Execute functions
+        # binary = QR_Code(lnaddress)
+        # uri = binary_to_webaddress(binary)
 
-        # Add a picture message (.jpg, .gif)
-        reply.media(
-            uri
-        )
+        # # Add a picture message (.jpg, .gif)
+        # reply.media(
+        #     uri
+        # )
 
     else:
         """Send a dynamic reply to an incoming text message"""
