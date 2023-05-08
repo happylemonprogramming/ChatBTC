@@ -64,6 +64,7 @@ def sms_reply():
         resp = MessagingResponse()
 
         # Add a message
+        print(response.json()['payment_request'])
         reply = resp.message(response.json()['payment_request'])
 
     else:
