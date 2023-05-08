@@ -65,7 +65,8 @@ def sms_reply():
 
         # Add a message
         print(response.json()['payment_request'])
-        reply = resp.message(response.json()['payment_request'])
+        lnaddress = str(response.json()['payment_request'])
+        reply = resp.message(lnaddress)
 
     else:
         """Send a dynamic reply to an incoming text message"""
