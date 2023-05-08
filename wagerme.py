@@ -48,7 +48,7 @@ def sms_reply():
         ]
     )
 
-    cost = float(0.002 * int(output['usage']['total_tokens']))
+    cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
     print(f"Cost: ${cost}")
     msg = output['choices'][0]['message']['content']
 
@@ -56,12 +56,12 @@ def sms_reply():
     resp = MessagingResponse()
 
     # Add a message
-    resp.message(msg)
+    reply = resp.message(msg)
 
-    # # Add a picture message
-    # resp.media(
-    #     "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
-    # )
+    # Add a picture message
+    reply.media(
+        "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
+    )
 
     return str(resp)
 
