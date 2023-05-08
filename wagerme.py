@@ -60,7 +60,7 @@ def sms_reply():
 
     # Add a picture message
     reply.media(
-        "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
+        "https://media2.giphy.com/media/xT0GqjBCkO9BEiSEOk/giphy.gif"
     )
 
     return str(resp)
