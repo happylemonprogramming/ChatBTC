@@ -53,9 +53,9 @@ def sms_reply():
             }
 
             data = {
-                'from': 'sat',
+                'from': 'usd',
                 'amount': amount,
-                'to': 'usd'
+                'to': 'sats'
             }
 
             response = requests.post(url, headers=headers, json=data)
