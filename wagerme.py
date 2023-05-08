@@ -26,6 +26,8 @@ import qrcode
 import os
 import requests
 import json
+import base64
+import io
 
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
@@ -68,17 +70,44 @@ def sms_reply():
         lnaddress = str(response.json()['payment_request'])
         reply = resp.message(lnaddress)
 
+        # Create QR Code
         def QR_Code(data):
+            # # Generate QR Code
+            # img = qrcode.make(data)
+            # imgpath = "qrcode.png"
+            # img.save(imgpath)
+
+            # # Read the image file as binary data
+            # with open(imgpath, 'rb') as f:
+            #     image_data = f.read()
+
             # Generate QR Code
             img = qrcode.make(data)
-            imgpath = "qrcode.png"
-            img.save(imgpath)
-            return imgpath
 
-        imgpath = QR_Code(lnaddress)
+            # Write the image data to a binary buffer
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            image_data = buf.getvalue()
+            return image_data
+
+        # Convert binary to URI that can be referenced as a HTML src
+        def binary_to_webaddress(binary):
+            # Encode the image data as base64
+            encoded_image = base64.b64encode(binary).decode('utf-8')
+
+            # Create a data URI scheme for the image
+            data_uri = 'data:image/png;base64,' + encoded_image
+
+            # Return the data URI scheme
+            return data_uri
+
+        # Execute functions
+        binary = QR_Code(lnaddress)
+        uri = binary_to_webaddress(binary)
+
         # Add a picture message (.jpg, .gif)
         reply.media(
-            imgpath
+            uri
         )
 
     else:
