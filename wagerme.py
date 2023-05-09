@@ -70,7 +70,7 @@ def sms_reply():
         wallet_name = balance['name']
 
         # Conversion to USD
-        balanceUSD = round(btctousd(balance_sats)['usd'], 2)
+        balanceUSD = round(btctousd(balance_sats)['USD'], 2)
 
         # Start our TwiML response
         resp = MessagingResponse()
