@@ -35,6 +35,7 @@ import openai
 from lnbits import *
 
 import os
+import subprocess
 
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
@@ -54,11 +55,16 @@ def sms_reply():
     if body.isdigit():
         # Convert input into sats
         sats = usdtobtc(body)['sats']
-        memo = 'test'
+        memo = 'message wallet bot'
 
         # Create receive address
-        lnaddress = receiveinvoice(sats,memo)
+        output = receiveinvoice(sats,memo)
+        lnaddress = output[0]
+        payment_hash = output[1]
         
+        # Open subprocess to see if message gets paid
+        subprocess.Popen(["python", "checkinvoice.py", payment_hash])
+
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message(lnaddress)

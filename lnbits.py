@@ -80,8 +80,9 @@ def receiveinvoice(amount, memo):
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
-
-    return response.json()['payment_request']
+    payment_request = response.json()['payment_request']
+    payment_hash = response.json()['payment_hash']
+    return payment_request, payment_hash
 
 # Decode invoice
 def decodeinvoice(address):
