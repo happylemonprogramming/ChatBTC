@@ -89,10 +89,13 @@ def sms_reply():
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     elif body.lower() == 'pay':
-        # Read invoice from local memory
-        with open('address.txt', 'r') as f:
-            address = f.read()
-        status = payinvoice(address)
+        if os.path.exists('file.txt'):
+            # Read invoice from local memory
+            with open('address.txt', 'r') as f:
+                address = f.read()
+            status = payinvoice(address)
+        else:
+            status = 'No payable address. Send lightning invoice.'
 
         if status == "Success!":
             os.remove('address.txt')
