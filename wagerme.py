@@ -1,4 +1,5 @@
 '''
+wagerme
 user sends Twilio Number a wager in the form of a number (i.e. '$20')
 Twilio Number replies with "what's the bet?"
 user responds with memo used in lightning address
@@ -14,20 +15,26 @@ when bet concludes, user replies results and bettor replies result ('I won!' or 
 '''
 
 '''
+app flow
 code->git->GitHub->heroku->twilio->phone number
 phone number->twilio->heroku
+'''
+
+'''
+text message wallet
+if number, then generate invoice
+if balance, then show balance
+if invoice, decode invoice
+if confirmed, then pay invoice (how can it confirm if it's a new call; need to store memory?)
+need to a function to create a wallet and needs to be tied to number
 '''
 
 from flask import Flask, request, redirect, render_template, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
 import openai
-import qrcode
+from lnbits import *
 
 import os
-import requests
-import json
-import base64
-import io
 
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
@@ -38,96 +45,44 @@ app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
+
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     print(body)
+
     """Generate a lightning invoice"""
     if body.isdigit():
-
-        # Conversion to USD
-        def usdtosats(amount):
-            url = 'https://legend.lnbits.com/api/v1/conversion'
-
-            headers = {
-                'Content-Type': 'application/json'
-            }
-
-            data = {
-                'from': 'usd',
-                'amount': amount,
-                'to': 'sats'
-            }
-
-            response = requests.post(url, headers=headers, json=data)
-            return response.json()
-        sats = usdtosats(body)['sats']
+        # Convert input into sats
+        sats = usdtobtc(body)['sats']
+        memo = 'temporary'
 
         # Create receive address
-        url = 'https://legend.lnbits.com/api/v1/payments'
-        api_key = lnbitsapikey
-        amount = sats # replace <int> with the actual integer value
-        memo = 'bet' # replace <string> with the actual string value
-
-        data = {
-            'out': False,
-            'amount': amount,
-            'memo': memo
-        }
-
-        headers = {
-            'X-Api-Key': api_key,
-            'Content-type': 'application/json'
-        }
-
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        lnaddress = receiveinvoice(sats,memo)
         
         # Start our TwiML response
         resp = MessagingResponse()
-
-        # Add a message
-        print(response.json()['payment_request'])
-        lnaddress = str(response.json()['payment_request'])
         reply = resp.message(lnaddress)
 
-        # # Create QR Code
-        # def QR_Code(data):
-        #     # Generate QR Code
-        #     img = qrcode.make(data)
-        #     imgpath = "qrcode.png"
-        #     img.save(imgpath)
+    elif body.lower() == "balance":
+        # Get wallet balance (msats)
+        balance = getbalance()
+        balance_sats = int(balance['balance'])
+        wallet_name = balance['name']
 
-        #     # Read the image file as binary data
-        #     with open(imgpath, 'rb') as f:
-        #         image_data = f.read()
+        # Conversion to USD
+        balanceUSD = round(btctousd(balance_sats)['usd'], 2)
 
-        #     # # Generate QR Code
-        #     # img = qrcode.make(data)
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message(f'{wallet_name} has ${balanceUSD} ({balance_sats} sats)')
 
-        #     # # Write the image data to a binary buffer
-        #     # buf = io.BytesIO()
-        #     # img.save(buf, format='PNG')
-        #     # image_data = buf.getvalue()
-        #     return image_data
-
-        # # Convert binary to URI that can be referenced as a HTML src
-        # def binary_to_webaddress(binary):
-        #     # Encode the image data as base64
-        #     encoded_image = base64.b64encode(binary).decode('utf-8')
-
-        #     # Create a data URI scheme for the image
-        #     data_uri = 'data:image/png;base64,' + encoded_image
-
-        #     # Return the data URI scheme
-        #     return data_uri
-
-        # # Execute functions
-        # binary = QR_Code(lnaddress)
-        # uri = binary_to_webaddress(binary)
-
-        # # Add a picture message (.jpg, .gif)
-        # reply.media(
-        #     uri
-        # )
+    elif body[0:4] == 'lnbc':
+        # Decode invoice
+        decode = decodeinvoice(body)
+                
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message(f'${decode[0]} {decode[2]}')
 
     else:
         """Send a dynamic reply to an incoming text message"""
