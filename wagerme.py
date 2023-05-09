@@ -72,7 +72,7 @@ def sms_reply():
     elif body.lower() == "balance":
         # Get wallet balance (msats)
         balance = getbalance()
-        balance_sats = int(balance['balance'])
+        balance_sats = int(balance['balance']/1000)
         wallet_name = balance['name']
 
         # Conversion to USD

@@ -159,3 +159,12 @@ def payinvoice(address):
 
 # api_key = lnbitsapikey
 # wallet = create_lnbits_wallet(api_key)
+
+
+if __name__ == "__main__":
+    output = receiveinvoice(2, 'yo')
+    address = output[0]
+    hashyhash = output[1]
+
+    new_output = checkstatus(hashyhash)
+    print(new_output)

@@ -19,7 +19,7 @@ while True:
     if time.time() - start > 120:
         msg = output
         break
-    elif output['paid'].lower() == 'yes': #need to confirm output
+    elif output['paid'] is True: #need to confirm output
         msg = 'PAID'
         break
     else:
