@@ -89,6 +89,8 @@ def sms_reply():
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     elif body.lower() == 'pay':
+        for filename in os.listdir():
+            print(filename)
         if os.path.exists('address.txt'):
             # Read invoice from local memory
             with open('address.txt', 'r') as f:
