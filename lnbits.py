@@ -18,6 +18,17 @@ def getbalance():
 
     return response.json()
 
+# Check Invoice Status
+def checkstatus(payment_hash):
+    url = f"https://legend.lnbits.com/api/v1/payments/{payment_hash}"
+    headers = {
+        "X-Api-Key": lnbitsapikey,
+        "Content-type": "application/json"
+    }
+
+    response = requests.get(url, headers=headers)
+    return response.json()
+
 # Conversion to USD
 def usdtobtc(amount):
     url = 'https://legend.lnbits.com/api/v1/conversion'

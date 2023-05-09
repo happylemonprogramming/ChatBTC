@@ -54,7 +54,7 @@ def sms_reply():
     if body.isdigit():
         # Convert input into sats
         sats = usdtobtc(body)['sats']
-        memo = 'temporary'
+        memo = 'test'
 
         # Create receive address
         lnaddress = receiveinvoice(sats,memo)
@@ -79,10 +79,27 @@ def sms_reply():
     elif body[0:4] == 'lnbc':
         # Decode invoice
         decode = decodeinvoice(body)
-                
+        
+        # Save to local memory
+        with open('address.txt', 'w') as f:
+            f.write(body)
+
         # Start our TwiML response
         resp = MessagingResponse()
-        reply = resp.message(f'${decode[0]} {decode[2]}')
+        reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+
+    elif body.lower() == 'pay':
+        # Read invoice from local memory
+        with open('address.txt', 'r') as f:
+            address = f.read()
+        status = payinvoice(address)
+
+        if status == "Success!":
+            os.remove('address.txt')
+
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message(status)
 
     else:
         """Send a dynamic reply to an incoming text message"""
