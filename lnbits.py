@@ -104,8 +104,8 @@ def decodeinvoice(address):
     keys_list = list(json_data.keys())
 
     # Variables of interest
-    amount = int(json_data['amount_msat']/1000)
-    amountUSD = round(btctousd(amount)['USD'],2)
+    amount = float(json_data['amount_msat']/1000)
+    amountUSD = round(btctousd(amount)['USD'], 2)
     expiry = json_data['expiry']
     description = json_data['description']
     return amountUSD, amount, description, expiry

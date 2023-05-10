@@ -27,6 +27,8 @@ if balance, then show balance
 if invoice, decode invoice
 if confirmed, then pay invoice (how can it confirm if it's a new call; need to store memory?)
 need to a function to create a wallet and needs to be tied to number
+need to be able to send QR codes via MMS
+need to be able to read QR codes from camera via AI or other library
 '''
 
 from flask import Flask, request, redirect, render_template, jsonify
@@ -36,6 +38,7 @@ from lnbits import *
 
 import os
 import subprocess
+import time
 
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
@@ -44,9 +47,15 @@ app = Flask(__name__)
 # Should be an environmental variable
 app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
+@app.route("/error", methods=['GET', 'POST'])
+def error():
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message('try again :(')
+
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
-
+    start = time.time()
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     print(body)
@@ -133,6 +142,7 @@ def sms_reply():
 
         # Add a message
         reply = resp.message(msg)
+        print('elasped time: ', time.time()-start)
 
         # # Add a picture message (.jpg, .gif)
         # reply.media(
