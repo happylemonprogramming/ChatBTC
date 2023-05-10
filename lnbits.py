@@ -127,6 +127,7 @@ def payinvoice(address):
     }
 
     response = requests.post(url, data=json.dumps(data), headers=headers)
+    print(response)
     key_list = list(response.json().keys())
     if 'payment_hash' in key_list:
         return 'Success!'
@@ -170,6 +171,8 @@ if __name__ == "__main__":
 
     # new_output = checkstatus(hashyhash)
     # print(new_output)
-    address = 'lnbc36140n1pj9kyzssp54m3cp2kt6g2xneczx30xjc04gh3zpfur80wqfe70c0zfryd22lvspp5hqzl0kej5t8tw9wn25re92t9hjjpsngkmuksg4mvkg9jkpmn0xgqdqad4jhxumpvajjqampd3kx2apqvfhhgxqzjccqpjrzjqvqgcn3kd2g6f574a3y7pz2gq2nkjjj30y5tpfqxswky69mqlyn8kzuv75qq35sqqqqqqq86qqqqqqgq9q9qyysgqlv59qy645j9nksehre5kldtedww4sylzwkcwztxd7cr332h3czqyf6fa7n6cw3jyzwv3qs85gh00wgskmaldxye0s8dq8n386kkxd4gqgyh7z0'
+    address = 'lnbc36130n1pj9ksg4pp5d780frv2wykccfwe3fhgt7zvktzgrsj5zenwlg6gwyuhx9l9cj5sdqu2askcmr9wssx7e3q2dshgmmndp5scqzzsxqyz5vqsp52jh6jsmmfjmq2634dfdfd5nu527gt92z6epq8ueu0x3ndgp4stds9qyyssq3w8xq968ecm8239q5trt6w0ags7h0ncnz5agj6nk5cu2a9vtrl6y8fxqs3wkcu052sufewf0mwqx7t2tv9nv6fklyl7c7q04d8hzdhsqad83eu'
     output = decodeinvoice(address)
     print(output)
+    # output = payinvoice(address)
+    # print(output)

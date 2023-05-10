@@ -3,30 +3,24 @@ import sys
 import os
 
 from twilio.rest import Client
-from lnbits import checkstatus
+from lnbits import payinvoice
 
 # Start clock and retreive argument
 start = time.time()
-payment_hash = sys.argv[1]
-from_number = sys.argv[2]
+from_number = sys.argv[1]
 
 # Environment variables
 twilioaccountsid = os.environ["twilioaccountsid"]
 twilioauthtoken = os.environ["twilioauthtoken"]
 
-# Invoice check loop
-while True:
-    output = checkstatus(payment_hash)
-    if time.time() - start > 120:
-        msg = output
-        break
-    elif output['paid'] is True: #need to confirm output
-        msg = 'PAID'
-        break
-    else:
-        elasped_time = time.time()-start
-        print(elasped_time)
-        time.sleep(2)
+# Read invoice from local memory
+with open('address.txt', 'r') as f:
+    address = f.read()
+status = payinvoice(address)
+
+# Remove temp file
+if status == "Success!":
+    os.remove('address.txt')
 
 # Twilio account verification
 account_sid = twilioaccountsid
@@ -37,7 +31,7 @@ client = Client(account_sid, auth_token)
 message = client.messages.create(
 from_='+19098940201',
 to=from_number,
-body=msg
+body=status
 )
 
 # Heroku prints

@@ -49,6 +49,7 @@ app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
 @app.route("/error", methods=['GET', 'POST'])
 def error():
+        # Default Twilio Option: https://demo.twilio.com/welcome/sms/reply
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('try again :(')
@@ -78,7 +79,7 @@ def sms_reply():
         reply = resp.message(lnaddress)
 
         # Open subprocess to see if message gets paid
-        subprocess.Popen(["python", "checkinvoice.py", payment_hash])
+        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number])
 
     elif body.lower() == "balance":
         # Get wallet balance (msats)
@@ -109,15 +110,15 @@ def sms_reply():
 
     elif body.lower() == 'pay':
         if os.path.exists('address.txt'):
-            # Read invoice from local memory
-            with open('address.txt', 'r') as f:
-                address = f.read()
-            status = payinvoice(address)
+            # Open subprocess to pay
+            subprocess.Popen(["python", "payinvoice.py", from_number])
+            # # Read invoice from local memory
+            # with open('address.txt', 'r') as f:
+            #     address = f.read()
+            # status = payinvoice(address)
+            status = 'In process...'
         else:
             status = 'No payable address. Send lightning invoice.'
-
-        if status == "Success!":
-            os.remove('address.txt')
 
         # Start our TwiML response
         resp = MessagingResponse()
@@ -127,6 +128,7 @@ def sms_reply():
         # Open subprocess to allow ChatGPT time to think
         subprocess.Popen(["python", "chatbot.py", body, from_number])
         resp = 'Thinking...'
+        print(resp)
         # """Send a dynamic reply to an incoming text message"""
         # # AI integration
         # output = openai.ChatCompletion.create(
