@@ -73,12 +73,12 @@ def sms_reply():
         lnaddress = output[0]
         payment_hash = output[1]
         
-        # Open subprocess to see if message gets paid
-        subprocess.Popen(["python", "checkinvoice.py", payment_hash])
-
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message(lnaddress)
+
+        # Open subprocess to see if message gets paid
+        subprocess.Popen(["python", "checkinvoice.py", payment_hash])
 
     elif body.lower() == "balance":
         # Get wallet balance (msats)
@@ -87,7 +87,7 @@ def sms_reply():
         wallet_name = balance['name']
 
         # Conversion to USD
-        convert = btctousd(balance_sats)['USD']
+        convert = str(btctousd(balance_sats)['USD'])
         index = convert.index('.')
         balanceUSD = convert[:index+3]
 
@@ -124,27 +124,30 @@ def sms_reply():
         reply = resp.message(status)
 
     else:
-        """Send a dynamic reply to an incoming text message"""
-        # AI integration
-        output = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": body}
-            # TODO consider recursive calls to the assistant that allows the assistant to have context
-            ]
-        )
+        # Open subprocess to allow ChatGPT time to think
+        subprocess.Popen(["python", "chatbot.py", body, from_number])
+        resp = 'Thinking...'
+        # """Send a dynamic reply to an incoming text message"""
+        # # AI integration
+        # output = openai.ChatCompletion.create(
+        # model="gpt-3.5-turbo",
+        # messages=[
+        #     {"role": "system", "content": "You are a helpful assistant."},
+        #     {"role": "user", "content": body}
+        #     # TODO consider recursive calls to the assistant that allows the assistant to have context
+        #     ]
+        # )
 
-        cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
-        print(f"Cost: ${cost}")
-        msg = output['choices'][0]['message']['content']
+        # cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
+        # print(f"Cost: ${cost}")
+        # msg = output['choices'][0]['message']['content']
 
-        # Start our TwiML response
-        resp = MessagingResponse()
+        # # Start our TwiML response
+        # resp = MessagingResponse()
 
-        # Add a message
-        reply = resp.message(msg)
-        print('elasped time: ', time.time()-start)
+        # # Add a message
+        # reply = resp.message(msg)
+        # print('elasped time: ', time.time()-start)
 
         # # Add a picture message (.jpg, .gif)
         # reply.media(
