@@ -104,8 +104,10 @@ def decodeinvoice(address):
     keys_list = list(json_data.keys())
 
     # Variables of interest
-    amount = float(json_data['amount_msat']/1000)
-    amountUSD = round(btctousd(amount)['USD'], 2)
+    amount = int(json_data['amount_msat']/1000)
+    convert = str(btctousd(amount)['USD'])
+    index = convert.index('.')
+    amountUSD = convert[:index+3]
     expiry = json_data['expiry']
     description = json_data['description']
     return amountUSD, amount, description, expiry
@@ -162,9 +164,12 @@ def payinvoice(address):
 
 
 if __name__ == "__main__":
-    output = receiveinvoice(2, 'yo')
-    address = output[0]
-    hashyhash = output[1]
+    # output = receiveinvoice(2, 'yo')
+    # address = output[0]
+    # hashyhash = output[1]
 
-    new_output = checkstatus(hashyhash)
-    print(new_output)
+    # new_output = checkstatus(hashyhash)
+    # print(new_output)
+    address = 'lnbc36140n1pj9kyzssp54m3cp2kt6g2xneczx30xjc04gh3zpfur80wqfe70c0zfryd22lvspp5hqzl0kej5t8tw9wn25re92t9hjjpsngkmuksg4mvkg9jkpmn0xgqdqad4jhxumpvajjqampd3kx2apqvfhhgxqzjccqpjrzjqvqgcn3kd2g6f574a3y7pz2gq2nkjjj30y5tpfqxswky69mqlyn8kzuv75qq35sqqqqqqq86qqqqqqgq9q9qyysgqlv59qy645j9nksehre5kldtedww4sylzwkcwztxd7cr332h3czqyf6fa7n6cw3jyzwv3qs85gh00wgskmaldxye0s8dq8n386kkxd4gqgyh7z0'
+    output = decodeinvoice(address)
+    print(output)

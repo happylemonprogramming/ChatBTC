@@ -58,7 +58,9 @@ def sms_reply():
     start = time.time()
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
+    from_number = request.values.get('From', None)
     print(body)
+    print(from_number)
 
     """Generate a lightning invoice"""
     if body.isdigit():
@@ -85,7 +87,9 @@ def sms_reply():
         wallet_name = balance['name']
 
         # Conversion to USD
-        balanceUSD = round(btctousd(balance_sats)['USD'], 2)
+        convert = btctousd(balance_sats)['USD']
+        index = convert.index('.')
+        balanceUSD = convert[:index+3]
 
         # Start our TwiML response
         resp = MessagingResponse()
@@ -104,8 +108,6 @@ def sms_reply():
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     elif body.lower() == 'pay':
-        for filename in os.listdir():
-            print(filename)
         if os.path.exists('address.txt'):
             # Read invoice from local memory
             with open('address.txt', 'r') as f:
