@@ -25,19 +25,29 @@ messages=[
 cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
 print(f"Cost: ${cost}")
 msg = output['choices'][0]['message']['content']
+msglength = len(str(msg))
+chunks = []
+if msglength > 1600:
+    # Split the message into chunks of 1600 characters
+    chunks = [msg[i:i+1600] for i in range(0, msglength, 1600)]
+    print(chunks)
+else:
+    chunks.append(msg)
+    print(chunks)
 
-# Twilio account verification
-account_sid = twilioaccountsid
-auth_token = twilioauthtoken
-client = Client(account_sid, auth_token)
+for content in chunks:
+    # Twilio account verification
+    account_sid = twilioaccountsid
+    auth_token = twilioauthtoken
+    client = Client(account_sid, auth_token)
 
-# Text message
-message = client.messages.create(
-from_='+19098940201',
-to=from_number,
-body=msg
-)
+    # Text message
+    message = client.messages.create(
+    from_='+19098940201',
+    to=from_number,
+    body=msg
+    )
 
-# Heroku prints
-print(message.sid)
-print('Text Message Sent')
+    # Heroku prints
+    print(message.sid)
+    print('Text Message Sent')
