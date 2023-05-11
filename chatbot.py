@@ -24,12 +24,13 @@ messages=[
 
 cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
 print(f"Cost: ${cost}")
+
 msg = output['choices'][0]['message']['content']
 msglength = len(str(msg))
 chunks = []
 if msglength > 1600:
     # Split the message into chunks of 1600 characters
-    chunks = [msg[i:i+1600] for i in range(0, msglength, 1600)]
+    chunks = [msg[i:i+1550] for i in range(0, msglength, 1550)] #character buffer for /n
     print(chunks)
 else:
     chunks.append(msg)
