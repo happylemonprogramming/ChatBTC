@@ -40,6 +40,7 @@ else:
 try:
     for content in chunks:
         print(content)
+        msg = content
         # Twilio account verification
         account_sid = twilioaccountsid
         auth_token = twilioauthtoken
