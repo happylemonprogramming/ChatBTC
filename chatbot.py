@@ -27,28 +27,47 @@ print(f"Cost: ${cost}")
 
 msg = output['choices'][0]['message']['content']
 msglength = len(str(msg))
+print(msglength)
 chunks = []
-if msglength > 1600:
+if msglength > 1500:
     # Split the message into chunks of 1600 characters
-    chunks = [msg[i:i+1550] for i in range(0, msglength, 1550)] #character buffer for /n
+    chunks = [msg[i:i+1500] for i in range(0, msglength, 1500)] #character buffer for /n
     print(chunks)
 else:
     chunks.append(msg)
     print(chunks)
 
-for content in chunks:
-    # Twilio account verification
-    account_sid = twilioaccountsid
-    auth_token = twilioauthtoken
-    client = Client(account_sid, auth_token)
+try:
+    for content in chunks:
+        print(content)
+        # Twilio account verification
+        account_sid = twilioaccountsid
+        auth_token = twilioauthtoken
+        client = Client(account_sid, auth_token)
 
-    # Text message
-    message = client.messages.create(
-    from_='+19098940201',
-    to=from_number,
-    body=msg
-    )
+        # Text message
+        message = client.messages.create(
+        from_='+19098940201',
+        to=from_number,
+        body=msg
+        )
 
-    # Heroku prints
-    print(message.sid)
-    print('Text Message Sent')
+        # Heroku prints
+        print(message.sid)
+        print('Text Message Sent')
+except:
+        # Twilio account verification
+        account_sid = twilioaccountsid
+        auth_token = twilioauthtoken
+        client = Client(account_sid, auth_token)
+
+        # Text message
+        message = client.messages.create(
+        from_='+19098940201',
+        to=from_number,
+        body='error :('
+        )
+
+        # Heroku prints
+        print(message.sid)
+        print('Text Message Sent')
