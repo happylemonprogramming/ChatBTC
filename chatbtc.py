@@ -1,34 +1,20 @@
 '''
-wagerme
-user sends Twilio Number a wager in the form of a number (i.e. '$20')
-Twilio Number replies with "what's the bet?"
-user responds with memo used in lightning address
-API generates lightning address
-Twilio Number sends 'lnbc1...'
-user pays invoice
-API notifies group
-group has 2 minutes to pay the invoice
-bettor pays invoice
-BETTING SHOWDOWN BEGINS
-user gets notified that it's about to go down
-when bet concludes, user replies results and bettor replies result ('I won!' or 'I lost.')
-'''
-
-'''
 app flow
 code->git->GitHub->heroku->twilio->phone number
 phone number->twilio->heroku
 '''
 
 '''
-text message wallet
-if number, then generate invoice
-if balance, then show balance
-if invoice, decode invoice
-if confirmed, then pay invoice (how can it confirm if it's a new call; need to store memory?)
-need to a function to create a wallet and needs to be tied to number
-need to be able to send QR codes via MMS
-need to be able to read QR codes from camera via AI or other library
+ChatBTC
+
+chatbot
+give AI to all SMS users
+TODO: allow user to set their own prompt for bot
+
+wallet
+give wallet to all SMS users
+TODO: need to a function to create a wallet and needs to be tied to number
+TODO: need to be able to read QR codes from camera via AI or other library
 '''
 
 from flask import Flask, request, redirect, render_template, jsonify
