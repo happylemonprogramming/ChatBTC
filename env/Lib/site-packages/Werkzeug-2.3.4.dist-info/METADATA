@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Werkzeug
-Version: 2.3.3
+Version: 2.3.4
 Summary: The comprehensive WSGI web application library.
 Author-email: Armin Ronacher <armin.ronacher@active-4.com>
 Maintainer-email: Pallets <contact@palletsprojects.com>
