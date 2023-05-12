@@ -1,1 +1,1 @@
-web: gunicorn -t 600 wagerme:app
+web: gunicorn -t 600 chatbtc:app
