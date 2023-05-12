@@ -27,19 +27,16 @@ print(f"Cost: ${cost}")
 
 msg = output['choices'][0]['message']['content']
 msglength = len(str(msg))
-print(msglength)
+
 chunks = []
 if msglength > 1500:
     # Split the message into chunks of 1600 characters
     chunks = [msg[i:i+1500] for i in range(0, msglength, 1500)] #character buffer for /n
-    print(chunks)
 else:
     chunks.append(msg)
-    print(chunks)
 
 try:
     for content in chunks:
-        print(content)
         msg = content
         # Twilio account verification
         account_sid = twilioaccountsid
@@ -54,8 +51,7 @@ try:
         )
 
         # Heroku prints
-        print(message.sid)
-        print('Text Message Sent')
+        print("Text Message ID: ", message.sid)
 except:
         # Twilio account verification
         account_sid = twilioaccountsid
@@ -70,5 +66,4 @@ except:
         )
 
         # Heroku prints
-        print(message.sid)
-        print('Text Message Sent')
+        print("Text Message ID: ", message.sid)

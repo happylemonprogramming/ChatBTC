@@ -35,5 +35,4 @@ body=status
 )
 
 # Heroku prints
-print(message.sid)
-print('Text Message Sent')
+print("Text Message ID: ", message.sid)

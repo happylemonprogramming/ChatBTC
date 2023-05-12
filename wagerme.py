@@ -35,6 +35,8 @@ from flask import Flask, request, redirect, render_template, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
 import openai
 from lnbits import *
+from qrsms import *
+from cloud import *
 
 import os
 import subprocess
@@ -42,9 +44,9 @@ import time
 
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
+phone_number = os.environ.get('phonenumber')
 
 app = Flask(__name__)
-# Should be an environmental variable
 app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
 @app.route("/error", methods=['GET', 'POST'])
@@ -60,8 +62,10 @@ def sms_reply():
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
-    print(body)
+    num_media = int(request.values.get('NumMedia', 0))
+    
     print(from_number)
+    print(body)
 
     """Generate a lightning invoice"""
     if body.isdigit():
@@ -74,8 +78,18 @@ def sms_reply():
         lnaddress = output[0]
         payment_hash = output[1]
         
+        # Create QR code
+        file = create_qrcode(lnaddress, filename='qrcode.png')
+
+        # Save to server
+        link = serverlink(file)
+        print("S3 url: ", link)
         # Start our TwiML response
         resp = MessagingResponse()
+        
+        # Add a picture message (.jpg, .gif)
+        reply.media(link)
+        # Send lightning address
         reply = resp.message(lnaddress)
 
         # Open subprocess to see if message gets paid
@@ -108,7 +122,26 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
-    elif body.lower() == 'pay':
+    elif num_media > 0: # Assumes this is a QR code
+        for i in range(num_media):
+            # Decode QR code image into text (lnbc)
+            media_url = request.values.get(f'MediaUrl{i}')
+            print("User media: ", media_url)
+
+            # Save address from QR code string
+            lnaddress = read_qrcode(media_url)
+            # Decode invoice
+            decode = decodeinvoice(body)
+
+            # Save to local memory
+            with open('address.txt', 'w') as f:
+                f.write(body)
+
+            # Start our TwiML response
+            resp = MessagingResponse()
+            reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+
+    elif body.lower() == 'pay' and from_number == phone_number:
         if os.path.exists('address.txt'):
             # Open subprocess to pay
             subprocess.Popen(["python", "payinvoice.py", from_number])
@@ -124,11 +157,16 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(status)
 
+    elif body.lower() == 'pay' and from_number != phone_number:
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message('Nice try :)')
+
     else:
         # Open subprocess to allow ChatGPT time to think
         subprocess.Popen(["python", "chatbot.py", body, from_number])
         resp = 'Thinking...'
-        print(resp)
+
         # """Send a dynamic reply to an incoming text message"""
         # # AI integration
         # output = openai.ChatCompletion.create(

@@ -25,7 +25,6 @@ while True:
         break
     else:
         elasped_time = time.time()-start
-        print(elasped_time)
         time.sleep(2)
 
 # Twilio account verification
@@ -41,5 +40,4 @@ body=msg
 )
 
 # Heroku prints
-print(message.sid)
-print('Text Message Sent')
+print("Text Message ID: ", message.sid)

@@ -127,7 +127,7 @@ def payinvoice(address):
     }
 
     response = requests.post(url, data=json.dumps(data), headers=headers)
-    print(response)
+
     key_list = list(response.json().keys())
     if 'payment_hash' in key_list:
         return 'Success!'
