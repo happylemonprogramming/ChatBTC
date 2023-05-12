@@ -1,0 +1,10 @@
+libsm6
+libxrender1
+libfontconfig1
+libice6
+libgl1
+libgl1-mesa-glx
+libGL
+libGL.so.1
+libxex6
+opencv-python
