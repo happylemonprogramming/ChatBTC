@@ -7,12 +7,12 @@ from lnbits import checkstatus
 
 # Start clock and retreive argument
 start = time.time()
-# payment_hash = sys.argv[1]
-# from_number = sys.argv[2]
+payment_hash = sys.argv[1]
+from_number = sys.argv[2]
 amount = sys.argv[3]
 
-payment_hash = 'eb1256a1fc76209ba188c11892c6ec5bd83c03700ab1e7518f59fb192a6e78d6'
-from_number = '+19092137231'
+# payment_hash = 'eb1256a1fc76209ba188c11892c6ec5bd83c03700ab1e7518f59fb192a6e78d6'
+# from_number = '+19092137231'
 
 # Environment variables
 twilioaccountsid = os.environ["twilioaccountsid"]

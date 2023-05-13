@@ -40,7 +40,7 @@ def error():
     # Default Twilio Option: https://demo.twilio.com/welcome/sms/reply
     # Start our TwiML response
     resp = MessagingResponse()
-    reply = resp.message('try again :(')
+    reply = resp.message('error, try again later :(')
     return 200
 
 @app.route("/sms", methods=['GET', 'POST'])
