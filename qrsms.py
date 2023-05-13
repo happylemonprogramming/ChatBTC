@@ -113,6 +113,6 @@ def create_qrcode(input, filename):
 if __name__ == '__main__':
     path = r"C:\Users\clayt\Documents\Programming\ChatBTC\qrcodetest (1).png"
     url = 'https://cdn.britannica.com/17/155017-050-9AC96FC8/Example-QR-code.jpg'
-    read_qrcode(url)
+    # read_qrcode(url)
     # read_qrcode_local(path)
-    # create_qrcode(path)
+    create_qrcode(path,'lightning.jpeg')

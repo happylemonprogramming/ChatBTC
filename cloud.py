@@ -11,7 +11,7 @@ def serverlink(local_filepath):
 
     filename = local_filepath  # This is the local file that you want to upload
     bucket_name = 'lightningsms'  # The name of your S3 bucket
-    object_name = 'lightning.png'  # The name you want the file to have on S3
+    object_name = 'lightning.jpeg'  # The name you want the file to have on S3
     region = 'us-west-1' # Region where the server resides
 
     # Uploads the given file using a managed uploader, which will split up large
@@ -30,4 +30,4 @@ def serverlink(local_filepath):
     return url
 
 if __name__ == "__main__":
-    print(serverlink('lightning.png'))
+    print(serverlink('lightning.jpg'))

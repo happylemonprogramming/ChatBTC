@@ -65,7 +65,7 @@ def sms_reply():
         payment_hash = output[1]
         
         # Create QR code
-        file = create_qrcode(lnaddress, filename='qrcode.png')
+        file = create_qrcode(lnaddress, filename='qrcode.jpeg')
 
         # Save to server
         link = serverlink(file)
