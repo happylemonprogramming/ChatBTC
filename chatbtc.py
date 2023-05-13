@@ -36,12 +36,12 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
 @app.route("/error", methods=['GET', 'POST'])
-def error():
+def error_reply():
     # Default Twilio Option: https://demo.twilio.com/welcome/sms/reply
     # Start our TwiML response
     resp = MessagingResponse()
     reply = resp.message('error, try again later :(')
-    return 200
+    return str(resp)
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
@@ -52,7 +52,7 @@ def sms_reply():
     num_media = int(request.values.get('NumMedia', 0))
     
     print(from_number)
-    print(body)
+    print(body, type(body))
 
     try:
         body = float(body)
@@ -60,7 +60,7 @@ def sms_reply():
         body = str(body)
 
     """Generate a lightning invoice"""
-    if body[0] == '$' or isinstance(body, (int, float)):
+    if str(body)[0] == '$' or isinstance(body, (int, float)):
         # Convert input into sats
         sats = usdtobtc(body)['sats']
         memo = 'message wallet bot'
