@@ -16,7 +16,7 @@ def serverlink(local_filepath):
 
     # Uploads the given file using a managed uploader, which will split up large
     # files automatically and upload parts in parallel.
-    s3.upload_file(filename, bucket_name, object_name)
+    s3.upload_file(filename, bucket_name, object_name, ExtraArgs={'ContentType': "image/jpeg"})
 
     # Create Url
     url = s3.generate_presigned_url(
@@ -30,4 +30,4 @@ def serverlink(local_filepath):
     return url
 
 if __name__ == "__main__":
-    print(serverlink('qrcodetest.png'))
+    print(serverlink('lightning.png'))
