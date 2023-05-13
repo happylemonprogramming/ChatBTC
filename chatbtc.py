@@ -54,12 +54,13 @@ def sms_reply():
     print(from_number)
     print(body)
 
+    try:
+        body = float(body)
+    except:
+        body = str(body)
+
     """Generate a lightning invoice"""
-    if body[0] == '$':
-        try:
-            body = float(body)
-        except:
-            body = str(body)
+    if body[0] == '$' or isinstance(body, (int, float)):
         # Convert input into sats
         sats = usdtobtc(body)['sats']
         memo = 'message wallet bot'
