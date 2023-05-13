@@ -75,9 +75,9 @@ def sms_reply():
         
         # Send lightning address
         reply = resp.message(lnaddress)
-        # Add a picture message (.jpg, .gif)
-        reply.media(link)
-        
+        # # Add a picture message (.jpg, .gif)
+        # reply.media(link)
+
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number])
 
