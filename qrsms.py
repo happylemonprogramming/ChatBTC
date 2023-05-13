@@ -40,7 +40,7 @@ def read_qrcode(path):
         detector = cv2.QRCodeDetector()
 
         # Detect and decode
-        data, bbox = detector.detectAndDecode(image)
+        data, bbox, straight_qrcode = detector.detectAndDecode(image)
 
         # If there is a QR code
         if bbox is not None:
@@ -49,6 +49,7 @@ def read_qrcode(path):
             print("QR Code not detected")
     else:
         print("File not present")
+        return data
 
 # # Read QR Code from URL
 # import requests
@@ -111,8 +112,9 @@ def create_qrcode(input, filename):
 
 
 if __name__ == '__main__':
-    path = r"C:\Users\clayt\Documents\Programming\ChatBTC\qrcodetest (1).png"
+    path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.png"
+    # "C:\Users\clayt\Downloads\IMG_1740.jpg"
     url = 'https://cdn.britannica.com/17/155017-050-9AC96FC8/Example-QR-code.jpg'
-    # read_qrcode(url)
+    print(read_qrcode(path))
     # read_qrcode_local(path)
-    create_qrcode(path,'lightning.jpeg')
+    # create_qrcode(path,'lightning.jpeg')

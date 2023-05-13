@@ -165,14 +165,14 @@ def payinvoice(address):
 
 
 if __name__ == "__main__":
-    # output = receiveinvoice(2, 'yo')
-    # address = output[0]
-    # hashyhash = output[1]
-
+    output = receiveinvoice(2, 'yo')
+    address = output[0]
+    hashyhash = output[1]
+    print(output)
     # new_output = checkstatus(hashyhash)
     # print(new_output)
-    address = 'lnbc36130n1pj9ksg4pp5d780frv2wykccfwe3fhgt7zvktzgrsj5zenwlg6gwyuhx9l9cj5sdqu2askcmr9wssx7e3q2dshgmmndp5scqzzsxqyz5vqsp52jh6jsmmfjmq2634dfdfd5nu527gt92z6epq8ueu0x3ndgp4stds9qyyssq3w8xq968ecm8239q5trt6w0ags7h0ncnz5agj6nk5cu2a9vtrl6y8fxqs3wkcu052sufewf0mwqx7t2tv9nv6fklyl7c7q04d8hzdhsqad83eu'
-    output = decodeinvoice(address)
-    print(output)
+    # address = 'lnbc36130n1pj9ksg4pp5d780frv2wykccfwe3fhgt7zvktzgrsj5zenwlg6gwyuhx9l9cj5sdqu2askcmr9wssx7e3q2dshgmmndp5scqzzsxqyz5vqsp52jh6jsmmfjmq2634dfdfd5nu527gt92z6epq8ueu0x3ndgp4stds9qyyssq3w8xq968ecm8239q5trt6w0ags7h0ncnz5agj6nk5cu2a9vtrl6y8fxqs3wkcu052sufewf0mwqx7t2tv9nv6fklyl7c7q04d8hzdhsqad83eu'
+    # output = decodeinvoice(address)
+    # print(output)
     # output = payinvoice(address)
     # print(output)

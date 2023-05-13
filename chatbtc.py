@@ -37,10 +37,11 @@ app.config["SECRET_KEY"] = os.environ.get('flasksecret')
 
 @app.route("/error", methods=['GET', 'POST'])
 def error():
-        # Default Twilio Option: https://demo.twilio.com/welcome/sms/reply
-        # Start our TwiML response
-        resp = MessagingResponse()
-        reply = resp.message('try again :(')
+    # Default Twilio Option: https://demo.twilio.com/welcome/sms/reply
+    # Start our TwiML response
+    resp = MessagingResponse()
+    reply = resp.message('try again :(')
+    return 200
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
@@ -64,22 +65,21 @@ def sms_reply():
         lnaddress = output[0]
         payment_hash = output[1]
         
-        # Create QR code
-        file = create_qrcode(lnaddress, filename='qrcode.jpeg')
+        # # Create QR code
+        # file = create_qrcode(lnaddress, filename='qrcode.jpeg')
+        # # Save to server
+        # link = serverlink(file)
+        # print("S3 url: ", link)
 
-        # Save to server
-        link = serverlink(file)
-        print("S3 url: ", link)
         # Start our TwiML response
         resp = MessagingResponse()
-        
         # Send lightning address
         reply = resp.message(lnaddress)
         # Add a picture message (.jpg, .gif)
         # reply.media(link)
 
         # Open subprocess to see if message gets paid
-        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number])
+        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, body])
 
     elif body.lower() == "balance":
         # Get wallet balance (msats)
@@ -108,24 +108,24 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
-    elif num_media > 0: # Assumes this is a QR code
-        for i in range(num_media):
-            # Decode QR code image into text (lnbc)
-            media_url = request.values.get(f'MediaUrl{i}')
-            print("User media: ", media_url)
+    # elif num_media > 0: # Assumes this is a QR code
+    #     for i in range(num_media):
+    #         # Decode QR code image into text (lnbc)
+    #         media_url = request.values.get(f'MediaUrl{i}')
+    #         print("User media: ", media_url)
 
-            # Save address from QR code string
-            lnaddress = read_qrcode(media_url)
-            # Decode invoice
-            decode = decodeinvoice(body)
+    #         # Save address from QR code string
+    #         lnaddress = read_qrcode(media_url)
+    #         # Decode invoice
+    #         decode = decodeinvoice(body)
 
-            # Save to local memory
-            with open('address.txt', 'w') as f:
-                f.write(body)
+    #         # Save to local memory
+    #         with open('address.txt', 'w') as f:
+    #             f.write(body)
 
-            # Start our TwiML response
-            resp = MessagingResponse()
-            reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+    #         # Start our TwiML response
+    #         resp = MessagingResponse()
+    #         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     elif body.lower() == 'pay' and from_number == phone_number:
         if os.path.exists('address.txt'):
