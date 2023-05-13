@@ -61,6 +61,8 @@ def sms_reply():
 
     """Generate a lightning invoice"""
     if str(body)[0] == '$' or isinstance(body, (int, float)):
+        if str(body)[0] == '$':
+            body = body[1:]
         # Convert input into sats
         sats = usdtobtc(body)['sats']
         memo = 'message wallet bot'
@@ -84,7 +86,7 @@ def sms_reply():
         # reply.media(link)
 
         # Open subprocess to see if message gets paid
-        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, body])
+        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])
 
     elif body.lower() == "balance":
         # Get wallet balance (msats)
