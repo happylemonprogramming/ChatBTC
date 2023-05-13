@@ -31,8 +31,8 @@ while True:
     if time.time() - start > 120:
         msg = 'Invoice Expired'
         break
-    elif output['paid'] is True:
-        msg = f'PAID ${amount}'
+    elif output['paid'] == True:
+        msg = f'Received ${amount}'
         break
     else:
         elasped_time = time.time()-start
