@@ -30,7 +30,7 @@ import time
 
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
-phone_number = os.environ.get('phonenumber')
+phone_number = os.environ['phone_number']
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get('flasksecret')
