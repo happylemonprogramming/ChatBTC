@@ -151,6 +151,10 @@ def sms_reply():
         reply = resp.message(status)
 
     elif body.lower() == 'pay' and from_number != phone_number:
+        print(from_number, type(from_number))
+        print(phone_number, type(phone_number))
+        print(from_number != phone_number)
+        print(from_number == phone_number)
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('Nice try :)')
