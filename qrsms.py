@@ -1,18 +1,15 @@
-# # Read QR Code
-# import cv2
-# from pyzbar.pyzbar import decode
+'''TODO: Code is not currently utilized because current methods of MMS messages yield twilio error
+CREATE method: make code->save code locally-->cloud.py (upload to s3 to get url)
+READ method: if url, save locally->detect & decode->return lnaddress [doesn't work with S3 link]
+'''
+# Generate QR Code
+import qrcode
+from PIL import Image
 
-# def read_qrcode_local(path):
-#     # Load the image
-#     img = cv2.imread(path)
-
-#     # Convert the image to grayscale
-#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-#     # Detect QR codes within the image
-#     qr_codes = decode(gray)
-#     return qr_codes[0].data.decode('utf-8')
-
+def create_qrcode(input, filename):
+    img = qrcode.make(input)
+    img.save(filename) #needs to be a hyperlink
+    return filename
 
 # Read QR Code from Path
 import cv2
@@ -51,7 +48,29 @@ def read_qrcode(path):
         print("File not present")
         return data
 
-# # Read QR Code from URL
+
+''' TODO: need to look more into this method
+no server download required'''
+# # Read QR Code ()
+# import requests
+# import numpy as np
+
+# def read_qrcode(url):
+#     # Download the image
+#     resp = requests.get(url, stream=True).raw
+#     image = np.asarray(bytearray(resp.read()), dtype="uint8")
+#     img = cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+#     # Convert the image to grayscale
+#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+#     # Detect QR codes within the image
+#     qr_codes = decode(gray)
+#     return qr_codes[0].data.decode('utf-8')
+
+''' TODO: need to look more into this method
+no server download required'''
+# # Read QR Code from URL (BYTES METHOD)
 # import requests
 # from PIL import Image
 # import numpy as np
@@ -83,25 +102,15 @@ def read_qrcode(path):
 #     else:
 #         print("QR Code not detected")
 
+''' TODO: Couldn't get this method to work because of zbar errors with Aptfile
+local location method'''
+# # Read QR Code after download (PYZBAR METHOD)
+# import cv2
+# from pyzbar.pyzbar import decode
 
-
-# Generate QR Code
-import qrcode
-from PIL import Image
-
-def create_qrcode(input, filename):
-    img = qrcode.make(input)
-    img.save(filename) #needs to be a hyperlink
-    return filename
-
-# import requests
-# import numpy as np
-
-# def read_qrcode(url):
-#     # Download the image
-#     resp = requests.get(url, stream=True).raw
-#     image = np.asarray(bytearray(resp.read()), dtype="uint8")
-#     img = cv2.imdecode(image, cv2.IMREAD_COLOR)
+# def read_qrcode_local(path):
+#     # Load the image
+#     img = cv2.imread(path)
 
 #     # Convert the image to grayscale
 #     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -110,11 +119,8 @@ def create_qrcode(input, filename):
 #     qr_codes = decode(gray)
 #     return qr_codes[0].data.decode('utf-8')
 
-
 if __name__ == '__main__':
-    path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.png"
-    # "C:\Users\clayt\Downloads\IMG_1740.jpg"
     url = 'https://cdn.britannica.com/17/155017-050-9AC96FC8/Example-QR-code.jpg'
-    print(read_qrcode(path))
+    print(read_qrcode(url))
     # read_qrcode_local(path)
     # create_qrcode(path,'lightning.jpeg')

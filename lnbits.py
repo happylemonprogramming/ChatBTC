@@ -1,3 +1,6 @@
+'''lnbits API functions for:
+invoice decoding, bitcoin payment, balance checking, currency conversion, invoice generation'''
+
 import requests
 import json
 import os
@@ -134,7 +137,9 @@ def payinvoice(address):
     else:
         return response.json()['detail']
 
-# # Create wallet (Doesn't work)
+'''TODO: Doesn't work;
+requires debug so that users can create a new wallet associated with their phone number'''
+# # Create wallet
 # def create_lnbits_wallet(api_key):
 #     url = "https://legend.lnbits.com/lnbits/api/v1/wallets"
 #     headers = {

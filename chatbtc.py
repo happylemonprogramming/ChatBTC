@@ -72,6 +72,7 @@ def sms_reply():
         lnaddress = output[0]
         payment_hash = output[1]
         
+        # TODO: Creates QR code and uploads to AWS to get url to pass as reply.media(link)
         # # Create QR code
         # file = create_qrcode(lnaddress, filename='qrcode.jpeg')
         # # Save to server
@@ -82,6 +83,7 @@ def sms_reply():
         resp = MessagingResponse()
         # Send lightning address
         reply = resp.message(lnaddress)
+        # TODO: Twilio gives MIME-CONTENT error for link
         # Add a picture message (.jpg, .gif)
         # reply.media(link)
 
@@ -115,6 +117,24 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
+    elif body.lower() == 'pay' and from_number == phone_number:
+        if os.path.exists('address.txt'):
+            # Open subprocess to pay
+            subprocess.Popen(["python", "payinvoice.py", from_number])
+            status = 'In process...'
+        else:
+            status = 'No payable address. Send lightning invoice.'
+
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message(status)
+
+    elif body.lower() == 'pay' and from_number != phone_number:
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message('Nice try :)')
+
+    # TODO: untested; decodes QR code image sent by user into lightning invoice, saves as txt, then notifies user
     # elif num_media > 0: # Assumes this is a QR code
     #     for i in range(num_media):
     #         # Decode QR code image into text (lnbc)
@@ -134,62 +154,10 @@ def sms_reply():
     #         resp = MessagingResponse()
     #         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
-    elif body.lower() == 'pay' and from_number == phone_number:
-        if os.path.exists('address.txt'):
-            # Open subprocess to pay
-            subprocess.Popen(["python", "payinvoice.py", from_number])
-            # # Read invoice from local memory
-            # with open('address.txt', 'r') as f:
-            #     address = f.read()
-            # status = payinvoice(address)
-            status = 'In process...'
-        else:
-            status = 'No payable address. Send lightning invoice.'
-
-        # Start our TwiML response
-        resp = MessagingResponse()
-        reply = resp.message(status)
-
-    elif body.lower() == 'pay' and from_number != phone_number:
-        print(from_number, type(from_number))
-        print(phone_number, type(phone_number))
-        print(from_number != phone_number)
-        print(from_number == phone_number)
-        # Start our TwiML response
-        resp = MessagingResponse()
-        reply = resp.message('Nice try :)')
-
     else:
         # Open subprocess to allow ChatGPT time to think
         subprocess.Popen(["python", "chatbot.py", body, from_number])
         resp = 'Thinking...'
-
-        # """Send a dynamic reply to an incoming text message"""
-        # # AI integration
-        # output = openai.ChatCompletion.create(
-        # model="gpt-3.5-turbo",
-        # messages=[
-        #     {"role": "system", "content": "You are a helpful assistant."},
-        #     {"role": "user", "content": body}
-        #     # TODO consider recursive calls to the assistant that allows the assistant to have context
-        #     ]
-        # )
-
-        # cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
-        # print(f"Cost: ${cost}")
-        # msg = output['choices'][0]['message']['content']
-
-        # # Start our TwiML response
-        # resp = MessagingResponse()
-
-        # # Add a message
-        # reply = resp.message(msg)
-        # print('elasped time: ', time.time()-start)
-
-        # # Add a picture message (.jpg, .gif)
-        # reply.media(
-        #     "https://media2.giphy.com/media/xT0GqjBCkO9BEiSEOk/giphy.gif"
-        # )
 
     return str(resp)
 

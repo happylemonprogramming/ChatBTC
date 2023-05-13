@@ -1,3 +1,5 @@
+'''Reads invoice from local file on server storage and pays via lnbits API then notifies user'''
+
 import time
 import sys
 import os

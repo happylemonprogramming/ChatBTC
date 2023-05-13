@@ -1,3 +1,6 @@
+'''Uploads file to Amazon AWS (S3) and returns authorized link
+TODO: Can't be decoded by qrsms.py'''
+
 import os
 import boto3
 
