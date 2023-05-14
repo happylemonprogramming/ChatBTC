@@ -13,17 +13,31 @@ openai.api_key = os.environ["openaiapikey"]
 body = sys.argv[1]
 from_number = sys.argv[2]
 
-# AI integration
-output = openai.ChatCompletion.create(
-model="gpt-3.5-turbo",
-messages=[
-    {"role": "system", "content": "You are a helpful assistant."},
-        # TODO consider allowing user to create their own prompt as a function
-        # The prompt can be anything: a therapist, doctor, mechanic, friend, teacher, etc...
-    {"role": "user", "content": body}
-        # TODO consider recursive calls to the assistant that allows the assistant to have context
-    ]
-)
+try:
+    # AI integration
+    output = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+            # TODO consider allowing user to create their own prompt as a function
+            # The prompt can be anything: a therapist, doctor, mechanic, friend, teacher, etc...
+        {"role": "user", "content": body}
+            # TODO consider recursive calls to the assistant that allows the assistant to have context
+        ]
+    )
+
+except:
+    # Twilio account verification
+    account_sid = twilioaccountsid
+    auth_token = twilioauthtoken
+    client = Client(account_sid, auth_token)
+
+    # Text message
+    message = client.messages.create(
+    from_='+19098940201',
+    to=from_number,
+    body='Try again later, AI server overloaded :('
+    )
 
 # Total AI cost, does not include Twilio fees or Carrier SMS/MMS fees
 cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
@@ -41,35 +55,19 @@ if msglength > 1500:
 else:
     chunks.append(msg)
 
-try:
-    for content in chunks:
-        msg = content
-        # Twilio account verification
-        account_sid = twilioaccountsid
-        auth_token = twilioauthtoken
-        client = Client(account_sid, auth_token)
+for content in chunks:
+    msg = content
+    # Twilio account verification
+    account_sid = twilioaccountsid
+    auth_token = twilioauthtoken
+    client = Client(account_sid, auth_token)
 
-        # Text message
-        message = client.messages.create(
-        from_='+19098940201',
-        to=from_number,
-        body=msg
-        )
+    # Text message
+    message = client.messages.create(
+    from_='+19098940201',
+    to=from_number,
+    body=msg
+    )
 
-        # Heroku prints
-        print("Text Message ID: ", message.sid)
-except:
-        # Twilio account verification
-        account_sid = twilioaccountsid
-        auth_token = twilioauthtoken
-        client = Client(account_sid, auth_token)
-
-        # Text message
-        message = client.messages.create(
-        from_='+19098940201',
-        to=from_number,
-        body='error :('
-        )
-
-        # Heroku prints
-        print("Text Message ID: ", message.sid)
+    # Heroku prints
+    print("Text Message ID: ", message.sid)
