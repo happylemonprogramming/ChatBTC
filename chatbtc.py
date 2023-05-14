@@ -15,6 +15,7 @@ wallet
 give wallet to all SMS users
 TODO: need to a function to create a wallet and needs to be tied to number
 TODO: need to be able to read QR codes from camera via AI or other library
+TODO: have wallets bound to phone numbers so that you can send bitcoin via phone number
 '''
 
 from flask import Flask, request, redirect, render_template, jsonify
@@ -89,6 +90,7 @@ def sms_reply():
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])
+        # TODO: integer body reads as $100.0 instead of $100.00
 
     elif body.lower() == "balance":
         # Get wallet balance (msats)
