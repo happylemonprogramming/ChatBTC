@@ -100,12 +100,12 @@ def sms_reply():
         # TODO: Twilio gives MIME-CONTENT error for link (XML) because it cannot pull S3 file (maybe due to permissions)
         # Add a picture message (.jpg, .gif)
         # Make the HEAD request
-        # media_url = 'https://chatbtc.herokuapp.com/dev'
-        # response = requests.head(media_url)
+        media_url = 'https://chatbtc.herokuapp.com/dev'
+        response = requests.head(media_url)
 
         # Print the Content-Type to verify for Twilio
-        # print(response.headers['Content-Type'])
-        # reply.media(media_url)
+        print(response.headers['Content-Type'])
+        reply.media(media_url)
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])
