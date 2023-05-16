@@ -27,5 +27,5 @@ def smstext(body, media_url):
 
 if __name__ == "__main__":
   body = 'yo'
-  media_url = 'https://lightningsms.s3.us-west-1.amazonaws.com/lightning.jpeg?AWSAccessKeyId=AKIAVIJP4GSVZCZH4NXY&Signature=jO%2F7Fyl%2B%2BLIjLsa3QsZHsH205Ts%3D&Expires=1684220724'
+  media_url = 'https://chatbtc.herokuapp.com/dev'
   print(smstext(body, media_url))
