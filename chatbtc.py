@@ -79,7 +79,7 @@ def sms_reply():
         # Create QR code
         file = create_qrcode(lnaddress, filename='qrcode.jpeg')
         img_io = BytesIO()
-        file.save(img_io, 'jpeg')
+        file[1].save(img_io, 'jpeg')
         img_io.seek(0)
 
         # # Save to server
@@ -92,7 +92,7 @@ def sms_reply():
         reply = resp.message(lnaddress)
         # TODO: Twilio gives MIME-CONTENT error for link
         # Add a picture message (.jpg, .gif)
-        reply.media(f'https://chatbtc.herokuapp.com/{file}')
+        reply.media(f'https://chatbtc.herokuapp.com/{file[0]}')
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])

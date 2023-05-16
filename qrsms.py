@@ -9,7 +9,7 @@ from PIL import Image
 def create_qrcode(input, filename):
     img = qrcode.make(input)
     img.save(filename) #needs to be a hyperlink
-    return filename
+    return filename, img
 
 # Read QR Code from Path
 import cv2
