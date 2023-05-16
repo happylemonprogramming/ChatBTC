@@ -88,7 +88,7 @@ def sms_reply():
         # Create QR code
         file = create_qrcode(lnaddress, filename='qrcode.jpeg')
 
-        # # Save to server
+        # # Save to S3 server
         # link = serverlink(file)
         # print("S3 url: ", link)
 
@@ -98,7 +98,7 @@ def sms_reply():
         reply = resp.message(lnaddress)
         # TODO: Twilio gives MIME-CONTENT error for link (XML) because it cannot pull S3 file (maybe due to permissions)
         # Add a picture message (.jpg, .gif)
-        # reply.media(link)
+        reply.media('https://chatbtc.herokuapp.com/dev')
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])
