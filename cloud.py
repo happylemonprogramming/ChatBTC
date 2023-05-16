@@ -33,4 +33,4 @@ def serverlink(local_filepath):
     return url
 
 if __name__ == "__main__":
-    print(serverlink('lightning.jpg'))
+    print(serverlink('lightning.jpeg'))

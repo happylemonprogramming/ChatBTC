@@ -16,6 +16,7 @@ give wallet to all SMS users
 TODO: need to a function to create a wallet and needs to be tied to number
 TODO: need to be able to read QR codes from camera via AI or other library
 TODO: have wallets bound to phone numbers so that you can send bitcoin via phone number
+TODO: need a more consistent method of payment (cashapp and wallet of satoshi fail; strike ok)
 '''
 
 from flask import Flask, request, redirect, render_template, jsonify
@@ -74,8 +75,8 @@ def sms_reply():
         payment_hash = output[1]
         
         # TODO: Creates QR code and uploads to AWS to get url to pass as reply.media(link)
-        # # Create QR code
-        # file = create_qrcode(lnaddress, filename='qrcode.jpeg')
+        # Create QR code
+        file = create_qrcode(lnaddress, filename='qrcode.jpeg')
         # # Save to server
         # link = serverlink(file)
         # print("S3 url: ", link)
@@ -86,7 +87,7 @@ def sms_reply():
         reply = resp.message(lnaddress)
         # TODO: Twilio gives MIME-CONTENT error for link
         # Add a picture message (.jpg, .gif)
-        # reply.media(link)
+        reply.media(f'https://chatbtc.herokuapp.com/{file}')
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])

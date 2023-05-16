@@ -120,7 +120,6 @@ local location method'''
 #     return qr_codes[0].data.decode('utf-8')
 
 if __name__ == '__main__':
-    url = 'https://cdn.britannica.com/17/155017-050-9AC96FC8/Example-QR-code.jpg'
-    print(read_qrcode(url))
-    # read_qrcode_local(path)
-    # create_qrcode(path,'lightning.jpeg')
+    url = 'yo dawg'
+    # print(read_qrcode('lightning.jpeg'))
+    create_qrcode(url,'lightning.jpeg')
