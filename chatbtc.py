@@ -25,6 +25,7 @@ import openai
 from lnbits import *
 from qrsms import *
 from cloud import *
+from PIL import Image
 
 import os
 import subprocess
@@ -49,12 +50,11 @@ def error_reply():
 # TODO: This returns Content-Type "Image/Jpeg", but cannot be recognized by Twilio
 @app.route("/dev", methods=['GET', 'POST'])
 def development():
-    with open('lightning.jpeg', 'rb') as f:
-        content = f.read()
-    bytes = BytesIO()
-    bytes.write(content)
-    bytes.seek(0)
-    return send_file(bytes, mimetype='image/jpeg')
+    img = Image.open('lightning.jpeg')
+    bytes_io = BytesIO()
+    img.save(bytes_io, format='BMP')
+    bytes_io.seek(0)  # move the cursor to the beginning of the file
+    return send_file(bytes_io, mimetype='image/bmp')
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
