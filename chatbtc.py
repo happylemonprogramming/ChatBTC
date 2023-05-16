@@ -51,7 +51,7 @@ def development():
     with open('lightning.jpeg', 'rb') as f:
         content = f.read()
     bytes = BytesIO()
-    bytes.save(content, 'jpeg')
+    bytes.write(content)
     bytes.seek(0)
     return send_file(bytes, mimetype='image/jpeg')
 
