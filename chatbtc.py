@@ -46,6 +46,15 @@ def error_reply():
     reply = resp.message('error, try again later :(')
     return str(resp)
 
+@app.route("/dev", methods=['GET', 'POST'])
+def development():
+    with open('lightning.jpeg', 'rb') as f:
+        content = f.read()
+    bytes = BytesIO()
+    bytes.save(content, 'jpeg')
+    bytes.seek(0)
+    return send_file(bytes, mimetype='image/jpeg')
+
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
     start = time.time()
@@ -78,9 +87,6 @@ def sms_reply():
         # TODO: Creates QR code and uploads to AWS to get url to pass as reply.media(link)
         # Create QR code
         file = create_qrcode(lnaddress, filename='qrcode.jpeg')
-        img_io = BytesIO()
-        file[1].save(img_io, 'jpeg')
-        img_io.seek(0)
 
         # # Save to server
         # link = serverlink(file)
@@ -90,14 +96,14 @@ def sms_reply():
         resp = MessagingResponse()
         # Send lightning address
         reply = resp.message(lnaddress)
-        # TODO: Twilio gives MIME-CONTENT error for link
+        # TODO: Twilio gives MIME-CONTENT error for link (XML) because it cannot pull S3 file (maybe due to permissions)
         # Add a picture message (.jpg, .gif)
-        reply.media(f'https://chatbtc.herokuapp.com/{file[0]}')
+        # reply.media(link)
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])
         # TODO: integer body reads as $100.0 instead of $100.00
-        return send_file(img_io, mimetype='image/jpeg'), str(resp)
+        return str(resp)
     
     elif body.lower() == "balance":
         # Get wallet balance (msats)
