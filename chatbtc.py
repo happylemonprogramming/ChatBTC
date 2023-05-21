@@ -110,7 +110,7 @@ def sms_reply():
         return str(resp)
     
     # Check wallet balance
-    elif body.lower() == "balance":
+    elif body.lower() == "balance" or body.lower() == "balance ": #Autocorrect adds space
         # Get wallet balance (msats)
         balance = getbalance()
         balance_sats = int(balance['balance']/1000)
@@ -152,6 +152,10 @@ def sms_reply():
             decode = decodeinvoice(content)
             print(decode)
 
+            # Save to local memory
+            with open('address.txt', 'w') as f:
+                f.write(content)
+
             # Start our TwiML response
             resp = MessagingResponse()
             reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
@@ -178,7 +182,7 @@ def sms_reply():
     else:
         # Open subprocess to allow ChatGPT time to think
         subprocess.Popen(["python", "chatbot.py", body, from_number])
-        # resp = 'Thinking...'
+        resp = 'Thinking...' # Need these to return 'str(resp)' for higher level sms_reply() function
 
     return str(resp)
 
