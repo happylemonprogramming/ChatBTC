@@ -147,9 +147,10 @@ def sms_reply():
 
             # Process Image
             content = process_image(media_url)
-
+            print(content)
             # Decode invoice
             decode = decodeinvoice(content)
+            print(decode)
 
             # Start our TwiML response
             resp = MessagingResponse()
