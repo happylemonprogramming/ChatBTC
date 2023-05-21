@@ -35,6 +35,7 @@ from io import BytesIO
 openai.api_key = os.environ["openaiapikey"]
 lnbitsapikey = os.environ["lnbitsapikey"]
 phone_number = os.environ['phone_number']
+keys = {phone_number: lnbitsadminkey}
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get('flasksecret')
@@ -47,12 +48,11 @@ def error_reply():
     reply = resp.message('error, try again later :(')
     return str(resp)
 
-# TODO: This returns Content-Type "Image/Jpeg", but cannot be recognized by Twilio
 @app.route("/dev", methods=['GET', 'POST'])
 def development():
     img = Image.open('lightning.jpeg')
     bytes_io = BytesIO()
-    img.save(bytes_io, format='BMP')
+    img.save(bytes_io, format='BMP') # only image file type accepted without fail
     bytes_io.seek(0)  # move the cursor to the beginning of the file
     return send_file(bytes_io, mimetype='image/bmp')
 
@@ -63,16 +63,13 @@ def sms_reply():
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
     num_media = int(request.values.get('NumMedia', 0))
-    
-    print(from_number)
-    print(body, type(body))
 
     try:
         body = float(body)
     except:
         body = str(body)
 
-    """Generate a lightning invoice"""
+    # Generate lightning invoice
     if str(body)[0] == '$' or isinstance(body, (int, float)):
         if str(body)[0] == '$':
             body = body[1:]
@@ -112,6 +109,7 @@ def sms_reply():
         # TODO: integer body reads as $100.0 instead of $100.00
         return str(resp)
     
+    # Check wallet balance
     elif body.lower() == "balance":
         # Get wallet balance (msats)
         balance = getbalance()
@@ -127,6 +125,7 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(f'{wallet_name} has ${balanceUSD} ({balance_sats} sats)')
 
+    # Decode an invoice from lightning address string
     elif body[0:4] == 'lnbc':
         # Decode invoice
         decode = decodeinvoice(body)
@@ -139,6 +138,24 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
+    # Decode an invoice from image of QR code
+    elif num_media > 0: # Assumes this is a QR code
+        for i in range(num_media):
+            # Get media url location
+            media_url = request.values.get(f'MediaUrl{i}')
+            print("User media: ", media_url)
+
+            # Process Image
+            content = process_image(media_url)
+
+            # Decode invoice
+            decode = decodeinvoice(content)
+
+            # Start our TwiML response
+            resp = MessagingResponse()
+            reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+
+    # Pay invoice
     elif body.lower() == 'pay' and from_number == phone_number:
         if os.path.exists('address.txt'):
             # Open subprocess to pay
@@ -151,35 +168,16 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(status)
 
+    # Wrong number pay attempt error
     elif body.lower() == 'pay' and from_number != phone_number:
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('Nice try :)')
 
-    # TODO: untested; decodes QR code image sent by user into lightning invoice, saves as txt, then notifies user
-    # elif num_media > 0: # Assumes this is a QR code
-    #     for i in range(num_media):
-    #         # Decode QR code image into text (lnbc)
-    #         media_url = request.values.get(f'MediaUrl{i}')
-    #         print("User media: ", media_url)
-
-    #         # Save address from QR code string
-    #         lnaddress = read_qrcode(media_url)
-    #         # Decode invoice
-    #         decode = decodeinvoice(body)
-
-    #         # Save to local memory
-    #         with open('address.txt', 'w') as f:
-    #             f.write(body)
-
-    #         # Start our TwiML response
-    #         resp = MessagingResponse()
-    #         reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
-
     else:
         # Open subprocess to allow ChatGPT time to think
         subprocess.Popen(["python", "chatbot.py", body, from_number])
-        resp = 'Thinking...'
+        # resp = 'Thinking...'
 
     return str(resp)
 
