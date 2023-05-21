@@ -70,7 +70,7 @@ def sms_reply():
         body = str(body)
 
     # Generate lightning invoice
-    if body is not None and (str(body)[0] == '$' or isinstance(body, (int, float))):
+    if body is not None and len(str(body)) > 0 and (str(body)[0] == '$' or isinstance(body, (int, float))):
         if str(body)[0] == '$':
             body = body[1:]
         # Convert input into sats
