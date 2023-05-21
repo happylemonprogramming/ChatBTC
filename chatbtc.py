@@ -63,14 +63,14 @@ def sms_reply():
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
     num_media = int(request.values.get('NumMedia', 0))
-
+    print(body, type(body))
     try:
         body = float(body)
     except:
         body = str(body)
 
     # Generate lightning invoice
-    if str(body)[0] == '$' or isinstance(body, (int, float)):
+    if body is not None and (str(body)[0] == '$' or isinstance(body, (int, float))):
         if str(body)[0] == '$':
             body = body[1:]
         # Convert input into sats

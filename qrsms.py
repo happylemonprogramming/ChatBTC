@@ -39,48 +39,47 @@ def process_image(media_path):
         path = 'fileread.png'
         with open(path, 'wb') as f:
             f.write(response.content)
-    # Else assume local
+    # Assume local path
     else:
         path = media_path
 
-        if os.path.exists(path): 
-            # Read the image
-            frame = cv2.imread(path)
+    if os.path.exists(path): 
+        # Read the image
+        frame = cv2.imread(path)
 
-            # Convert to grayscale
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Convert to grayscale
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # Threshold the image to highlight QR codes
-            _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+        # Threshold the image to highlight QR codes
+        _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
 
-            # Find contours in the thresholded image
-            contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # Find contours in the thresholded image
+        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-            # Filter out small contours based on area
-            contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
+        # Filter out small contours based on area
+        contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
 
-            # If any contours are found
-            if len(contours) > 0:
-                # Find the largest contour
-                cnt = max(contours, key=cv2.contourArea)
-                
-                # Find bounding rect for the contour
-                x, y, w, h = cv2.boundingRect(cnt)
-                
-                # Crop the image to this bounding rect
-                cropped = thresh[y:y+h, x:x+w]
-            else:
-                cropped = thresh 
+        # If any contours are found
+        if len(contours) > 0:
+            # Find the largest contour
+            cnt = max(contours, key=cv2.contourArea)
             
-            data = decode_image(Image.fromarray(cropped))
+            # Find bounding rect for the contour
+            x, y, w, h = cv2.boundingRect(cnt)
+            
+            # Crop the image to this bounding rect
+            cropped = thresh[y:y+h, x:x+w]
         else:
-            # Return response to Heroku
-            data = 'File not present'
-            print(data)
+            cropped = thresh 
+        
+        data = decode_image(Image.fromarray(cropped))
+    else:
+        # Return response to Heroku
+        data = 'File not present'
+        print(data)
 
     # Decode and return string
     return data 
-
 
 if __name__ == '__main__':
     # string = 'yo gangster thug g-meister'
