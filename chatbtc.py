@@ -88,7 +88,7 @@ def sms_reply():
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
 
     # User accepts terms
-    elif body.lower() == 'accept':
+    elif type(body) is str and body.lower() == 'accept':
         wallet_data = createwallet(from_number)
         lnbitsadmin = wallet_data['adminkey']
         save_to_dynamodb(from_number, lnbitsadmin)
@@ -96,7 +96,7 @@ def sms_reply():
         reply = resp.message('Your wallet has been created! AI chatbot unlocked! Text "help" to learn more.')
 
     # User needs help
-    elif body.lower() == 'help':
+    elif type(body) is str and body.lower() == 'help':
         resp = MessagingResponse()
         reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, "<MMS Image>" to decode lightning QR code')
 
