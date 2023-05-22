@@ -9,6 +9,7 @@ from PIL import Image, ImageEnhance
 import cv2
 import requests
 import os
+import time
 
 # Generate QR Code
 def create_qrcode(input, filename):
@@ -46,45 +47,53 @@ def process_image(media_path):
 
     if os.path.exists(path):
 
-        # Open the image
-        image = Image.open(path)
-
-        # Create enhancer
-        enhancer = ImageEnhance.Sharpness(image)
-
-        # Enhance sharpness
-        enhancer.enhance(20.0).save(path)
-
-        # Read the image
-        frame = cv2.imread(path)
-
-        # Convert to grayscale
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        # Threshold the image to highlight QR codes
-        _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-
-        # Find contours in the thresholded image
-        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        # Filter out small contours based on area
-        contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
-
-        # If any contours are found
-        if len(contours) > 0:
-            # Find the largest contour
-            cnt = max(contours, key=cv2.contourArea)
-            
-            # Find bounding rect for the contour
-            x, y, w, h = cv2.boundingRect(cnt)
-            
-            # Crop the image to this bounding rect
-            cropped = thresh[y:y+h, x:x+w]
-        else:
-            cropped = thresh 
-        
         data = decode_image(Image.fromarray(cropped))
+        sharp_factor = 1.0
+        start = time.time()
 
+        while data is None:
+            # Open the image
+            image = Image.open(path)
+
+            # Create enhancer
+            enhancer = ImageEnhance.Sharpness(image)
+
+            # Enhance sharpness
+            enhancer.enhance(sharp_factor).save(path)
+
+            # Read the image
+            frame = cv2.imread(path)
+
+            # Convert to grayscale
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Threshold the image to highlight QR codes
+            _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+
+            # Find contours in the thresholded image
+            contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+            # Filter out small contours based on area
+            contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
+
+            # If any contours are found
+            if len(contours) > 0:
+                # Find the largest contour
+                cnt = max(contours, key=cv2.contourArea)
+                
+                # Find bounding rect for the contour
+                x, y, w, h = cv2.boundingRect(cnt)
+                
+                # Crop the image to this bounding rect
+                cropped = thresh[y:y+h, x:x+w]
+            else:
+                cropped = thresh 
+                
+            data = decode_image(Image.fromarray(cropped))
+            sharp_factor += 1.0
+
+            if time.time()-start > 60:
+                break
     else:
         # Return response to Heroku
         data = 'File not present'
@@ -98,5 +107,5 @@ if __name__ == '__main__':
     # create_qrcode(string,'test.jpeg')
     # path = 'https://api.twilio.com/2010-04-01/Accounts/AC4b0fd142453f208bb5f81b6b8e9f844d/Messages/MMd5da0e2cbd46af04483164983eb6ef40/Media/ME5fc5a75e30abd4c7a57b9413d18d8a7f'
     # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
-    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/35c7f56811448e77a254db5d741df03e'
+    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/7fe353862cae739e35eef46bdff16ef7'
     print(process_image(path))
