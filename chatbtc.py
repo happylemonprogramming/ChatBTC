@@ -93,10 +93,10 @@ def sms_reply():
         lnbitsadmin = wallet_data['adminkey']
         save_to_dynamodb(from_number, lnbitsadmin)
         resp = MessagingResponse()
-        reply = resp.message('Your wallet has been created! AI chatbot unlocked! Text "help" to learn more.')
+        reply = resp.message('Your wallet has been created! AI chatbot unlocked! Text "commands" to learn more.')
 
     # User needs help
-    elif type(body) is str and body.lower() == 'help':
+    elif type(body) is str and body.lower() == 'commands':
         resp = MessagingResponse()
         reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, "<MMS Image>" to decode lightning QR code')
 
