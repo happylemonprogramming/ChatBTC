@@ -78,6 +78,8 @@ def sms_reply():
             user = from_number
         except:
             user = None
+    else:
+        user = body
 
     # Confirm user
     if user == None:
