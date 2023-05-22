@@ -10,6 +10,7 @@ from lnbits import payinvoice
 # Start clock and retreive argument
 start = time.time()
 from_number = sys.argv[1]
+lnbitsadmin = sys.argv[2]
 
 # Environment variables
 twilioaccountsid = os.environ["twilioaccountsid"]
@@ -18,7 +19,7 @@ twilioauthtoken = os.environ["twilioauthtoken"]
 # Read invoice from local memory
 with open('address.txt', 'r') as f:
     address = f.read()
-status = payinvoice(address)
+status = payinvoice(address, lnbitsadmin)
 
 # Remove temp file
 if status == "Success!":

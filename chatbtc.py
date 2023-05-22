@@ -194,10 +194,10 @@ def sms_reply():
             reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     # Pay invoice
-    elif body.lower() == 'pay' and from_number == phone_number:
+    elif body.lower() == 'pay':
         if os.path.exists('address.txt'):
             # Open subprocess to pay
-            subprocess.Popen(["python", "payinvoice.py", from_number])
+            subprocess.Popen(["python", "payinvoice.py", from_number, lnbitsadmin])
             status = 'In process...'
         else:
             status = 'No payable address. Send lightning invoice.'
@@ -206,11 +206,11 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(status)
 
-    # Wrong number pay attempt error
-    elif body.lower() == 'pay' and from_number != phone_number:
-        # Start our TwiML response
-        resp = MessagingResponse()
-        reply = resp.message('Nice try :)')
+    # # Wrong number pay attempt error
+    # elif body.lower() == 'pay' and from_number != phone_number:
+    #     # Start our TwiML response
+    #     resp = MessagingResponse()
+    #     reply = resp.message('Nice try :)')
 
     # All else assumes prompt for bot
     else:
