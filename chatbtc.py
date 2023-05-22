@@ -26,6 +26,7 @@ from lnbits import *
 from qrsms import *
 from cloud import *
 from PIL import Image
+from urllib.parse import urlparse, parse_qs
 
 import os
 import subprocess
@@ -63,7 +64,7 @@ def sms_reply():
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
     num_media = int(request.values.get('NumMedia', 0))
-    print(body, type(body))
+
     try:
         body = float(body)
     except:
@@ -152,6 +153,13 @@ def sms_reply():
             # Process Image
             content = process_image(media_url)
             print(content)
+
+            # For Cashapp QR Codes
+            if content.startswith("bitcoin:") or content.startswith("lightning="):
+                parsed_url = urlparse(content)
+                query_params = parse_qs(parsed_url.query)
+                content = query_params.get('lightning', [None])[0]
+            
             # Decode invoice
             decode = decodeinvoice(content)
             print(decode)

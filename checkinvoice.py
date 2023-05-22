@@ -36,7 +36,7 @@ while True:
         break
     else:
         elasped_time = time.time()-start
-        print(output['paid'], elasped_time)
+        print(f"Invoice Paid: {output['paid']}. Elasped Time: {elasped_time}")
         time.sleep(2)
 
 # Twilio account verification

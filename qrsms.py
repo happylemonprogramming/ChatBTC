@@ -51,11 +51,9 @@ def process_image(media_path):
         data = None
         sharp_factor = 1.0
         start = time.time()
-        test = 1
-
+        
         # Open the image
         image = Image.open(path)
-        # image.save('original.jpg', 'JPEG')
 
         while data is None:
             # Create enhancer
@@ -96,11 +94,10 @@ def process_image(media_path):
 
             data = decode_image(Image.fromarray(thresh))
             sharp_factor = 1.01
-            test += 1
-            print(sharp_factor)
 
-            if time.time()-start > 1:
+            if time.time()-start > 30:
                 break
+
     else:
         # Return response to Heroku
         data = 'File not present'
