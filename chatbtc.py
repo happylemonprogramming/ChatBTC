@@ -71,12 +71,13 @@ def sms_reply():
     except:
         body = str(body)
 
-    try:
-        item = get_from_dynamodb(from_number)
-        lnbitsadmin = item['lnbitsadmin']
-        user = from_number
-    except:
-        user = None
+    if body.lower() != 'accept':
+        try:
+            item = get_from_dynamodb(from_number)
+            lnbitsadmin = item['lnbitsadmin']
+            user = from_number
+        except:
+            user = None
 
     # Confirm user
     if user == None:
