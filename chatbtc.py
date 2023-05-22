@@ -13,8 +13,6 @@ TODO: allow user to set their own prompt for bot
 
 wallet
 give wallet to all SMS users
-TODO: need to a function to create a wallet and needs to be tied to number
-TODO: need to be able to read QR codes from camera via AI or other library
 TODO: have wallets bound to phone numbers so that you can send bitcoin via phone number
 TODO: need a more consistent method of payment (cashapp and wallet of satoshi fail; strike ok)
 '''
@@ -71,18 +69,16 @@ def sms_reply():
     except:
         body = str(body)
 
-    if type(body) is str and body.lower() != 'accept':
-        try:
-            item = get_from_dynamodb(from_number)
-            lnbitsadmin = item['lnbitsadmin']
-            user = from_number
-        except:
-            user = None
-    else:
-        user = body
+    # Confirm user is in database
+    try:
+        item = get_from_dynamodb(from_number)
+        lnbitsadmin = item['lnbitsadmin']
+        user = from_number
+    except:
+        user = None
 
-    # Confirm user
-    if user == None:
+    # Service agreement
+    if user == None and body.lower() != 'accept':
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
@@ -216,6 +212,7 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message('Nice try :)')
 
+    # All else assumes prompt for bot
     else:
         # Open subprocess to allow ChatGPT time to think
         subprocess.Popen(["python", "chatbot.py", body, from_number])
