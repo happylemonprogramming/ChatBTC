@@ -124,7 +124,8 @@ if __name__ == '__main__':
     # path = 'https://api.twilio.com/2010-04-01/Accounts/AC4b0fd142453f208bb5f81b6b8e9f844d/Messages/MMd5da0e2cbd46af04483164983eb6ef40/Media/ME5fc5a75e30abd4c7a57b9413d18d8a7f'
     # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
     # Blurry
-    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/cf516005790f145d2d3b1bd14b8ac1a4'
+    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/9c19de83757190e6db3b1d3090ded921'
+    # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/cf516005790f145d2d3b1bd14b8ac1a4'
     # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/b6e88dadbcf271947fb03ec150b1b0be'
     # Clear
     # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/8c572c35b962ba3efe50a776855c3036'

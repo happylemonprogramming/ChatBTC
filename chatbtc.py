@@ -27,6 +27,7 @@ from qrsms import *
 from cloud import *
 from PIL import Image
 from urllib.parse import urlparse, parse_qs
+from database import *
 
 import os
 import subprocess
@@ -34,7 +35,7 @@ import time
 from io import BytesIO
 
 openai.api_key = os.environ["openaiapikey"]
-lnbitsapikey = os.environ["lnbitsapikey"]
+# lnbitsapikey = os.environ["lnbitsapikey"]
 phone_number = os.environ['phone_number']
 keys = {phone_number: lnbitsadminkey}
 
@@ -70,32 +71,53 @@ def sms_reply():
     except:
         body = str(body)
 
+    try:
+        item = get_from_dynamodb(from_number)
+        lnbitsadmin = item['lnbitsadmin']
+        user = from_number
+    except:
+        user = None
+
+    # Confirm user
+    if user == None:
+        # Start our TwiML response
+        resp = MessagingResponse()
+        reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
+
+    # User accepts terms
+    elif body.lower() == 'accept':
+        wallet_data = createwallet(from_number)
+        lnbitsadmin = wallet_data['adminkey']
+        save_to_dynamodb(from_number, lnbitsadmin)
+        resp = MessagingResponse()
+        reply = resp.message('Your wallet has been created! AI chatbot unlocked! Text "help" to learn more.')
+
+    # User needs help
+    elif body.lower() == 'help':
+        resp = MessagingResponse()
+        reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, "<MMS Image>" to decode lightning QR code')
+
     # Generate lightning invoice
-    if body is not None and len(str(body)) > 0 and (str(body)[0] == '$' or isinstance(body, (int, float))):
+    elif body is not None and len(str(body)) > 0 and (str(body)[0] == '$' or isinstance(body, (int, float))):
         if str(body)[0] == '$':
             body = body[1:]
         # Convert input into sats
         sats = usdtobtc(body)['sats']
-        memo = 'message wallet bot'
+        memo = 'SMS wallet bot'
 
         # Create receive address
-        output = receiveinvoice(sats,memo)
+        output = receiveinvoice(sats,memo,lnbitsadmin)
         lnaddress = output[0]
         payment_hash = output[1]
         
-        # TODO: Creates QR code and uploads to AWS to get url to pass as reply.media(link)
         # Create QR code
         file = create_qrcode(lnaddress, filename='lightning.jpeg')
-
-        # # Save to S3 server
-        # link = serverlink(file)
-        # print("S3 url: ", link)
 
         # Start our TwiML response
         resp = MessagingResponse()
         # Send lightning address
         reply = resp.message(lnaddress)
-        # TODO: Twilio gives MIME-CONTENT error for link (XML) because it cannot pull S3 file (maybe due to permissions)
+
         # Add a picture message (.jpg, .gif)
         # Make the HEAD request
         media_url = 'https://chatbtc.herokuapp.com/dev'
@@ -113,7 +135,7 @@ def sms_reply():
     # Check wallet balance
     elif body.lower() == "balance" or body.lower() == "balance ": #Autocorrect adds space
         # Get wallet balance (msats)
-        balance = getbalance()
+        balance = getbalance(lnbitsadmin)
         balance_sats = int(balance['balance']/1000)
         wallet_name = balance['name']
 
@@ -129,7 +151,7 @@ def sms_reply():
     # Decode an invoice from lightning address string
     elif body[0:4] == 'lnbc':
         # Decode invoice
-        decode = decodeinvoice(body)
+        decode = decodeinvoice(body, lnbitsadmin)
         
         # Save to local memory
         with open('address.txt', 'w') as f:
@@ -161,7 +183,7 @@ def sms_reply():
                 content = query_params.get('lightning', [None])[0]
             
             # Decode invoice
-            decode = decodeinvoice(content)
+            decode = decodeinvoice(content, lnbitsadmin)
             print(decode)
 
             # Save to local memory
