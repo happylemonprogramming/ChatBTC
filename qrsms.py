@@ -52,8 +52,7 @@ def process_image(media_path):
         sharp_factor = 1.0
         start = time.time()
         
-        # Open the image
-        image = Image.open(path)
+
 
         while data is None:
 
@@ -63,6 +62,8 @@ def process_image(media_path):
             # # Enhance sharpness
             # enhancer.enhance(sharp_factor).save(path)
 
+            # Open the image
+            image = Image.open(path)
 
             # Read the image
             frame = cv2.imread(path)
@@ -100,7 +101,7 @@ def process_image(media_path):
             path = 'processed.jpg'
 
             # Apply the UnsharpMask filter
-            sharpened_img = image.filter(ImageFilter.UnsharpMask(radius=20, percent=200))
+            sharpened_img = image.filter(ImageFilter.UnsharpMask(radius=10, percent=110))
 
             # Save the result
             sharpened_img.save(path)
@@ -124,6 +125,7 @@ if __name__ == '__main__':
     # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
     # Blurry
     path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/cf516005790f145d2d3b1bd14b8ac1a4'
+    # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/b6e88dadbcf271947fb03ec150b1b0be'
     # Clear
     # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/8c572c35b962ba3efe50a776855c3036'
     print(process_image(path))
