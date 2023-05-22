@@ -84,7 +84,7 @@ def sms_reply():
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
 
     # User accepts terms
-    elif type(body) is str and body.lower() == 'accept':
+    elif type(body) is str and body.lower() == 'accept' and user == None:
         wallet_data = createwallet(from_number)
         lnbitsadmin = wallet_data['adminkey']
         save_to_dynamodb(from_number, lnbitsadmin)
@@ -159,6 +159,7 @@ def sms_reply():
         # Start our TwiML response
         resp = MessagingResponse()
         if decode[2] != None:
+        # TODO: decode[2] shows "SMS wallet bot" instead of lightning memo
             text = f'Text "pay" to send ${decode[0]} for {decode[2]}'
         else:
             text = f'Text "pay" to send ${decode[0]}'
