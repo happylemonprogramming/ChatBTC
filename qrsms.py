@@ -5,7 +5,7 @@ READ method: if url, save locally->detect & decode->return lnaddress [doesn't wo
 
 from pyzbar.pyzbar import decode
 import qrcode
-from PIL import Image
+from PIL import Image, ImageEnhance
 import cv2
 import requests
 import os
@@ -36,14 +36,25 @@ def process_image(media_path):
         response.raise_for_status()
 
         # Save the image locally
-        path = 'fileread.jpg'
+        path = 'QRread.jpg'
         with open(path, 'wb') as f:
             f.write(response.content)
+
     # Assume local path
     else:
         path = media_path
 
-    if os.path.exists(path): 
+    if os.path.exists(path):
+
+        # Open the image
+        image = Image.open(path)
+
+        # Create enhancer
+        enhancer = ImageEnhance.Sharpness(image)
+
+        # Enhance sharpness
+        enhancer.enhance(20.0).save(path)
+
         # Read the image
         frame = cv2.imread(path)
 
@@ -86,5 +97,6 @@ if __name__ == '__main__':
     # string = 'yo gangster thug g-meister'
     # create_qrcode(string,'test.jpeg')
     # path = 'https://api.twilio.com/2010-04-01/Accounts/AC4b0fd142453f208bb5f81b6b8e9f844d/Messages/MMd5da0e2cbd46af04483164983eb6ef40/Media/ME5fc5a75e30abd4c7a57b9413d18d8a7f'
-    path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
+    # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
+    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/35c7f56811448e77a254db5d741df03e'
     print(process_image(path))

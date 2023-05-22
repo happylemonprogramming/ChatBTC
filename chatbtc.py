@@ -136,7 +136,11 @@ def sms_reply():
 
         # Start our TwiML response
         resp = MessagingResponse()
-        reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+        if decode[2] != None:
+            text = f'Text "pay" to send ${decode[0]} for {decode[2]}'
+        else:
+            text = f'Text "pay" to send ${decode[0]}'
+        reply = resp.message(text)
 
     # Decode an invoice from image of QR code
     elif num_media > 0: # Assumes this is a QR code
