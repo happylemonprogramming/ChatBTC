@@ -71,7 +71,7 @@ def sms_reply():
     except:
         body = str(body)
 
-    if body.lower() != 'accept':
+    if type(body) is str and body.lower() != 'accept':
         try:
             item = get_from_dynamodb(from_number)
             lnbitsadmin = item['lnbitsadmin']
@@ -98,7 +98,7 @@ def sms_reply():
     # User needs help
     elif type(body) is str and body.lower() == 'commands':
         resp = MessagingResponse()
-        reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, "<MMS Image>" to decode lightning QR code')
+        reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, or send a QR code MMS message to decode lightning address')
 
     # Generate lightning invoice
     elif body is not None and len(str(body)) > 0 and (str(body)[0] == '$' or isinstance(body, (int, float))):
