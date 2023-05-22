@@ -5,7 +5,7 @@ READ method: if url, save locally->detect & decode->return lnaddress [doesn't wo
 
 from pyzbar.pyzbar import decode
 import qrcode
-from PIL import Image, ImageEnhance, ImageFile
+from PIL import Image, ImageEnhance, ImageFile, ImageFilter
 import cv2
 import requests
 import os
@@ -56,11 +56,13 @@ def process_image(media_path):
         image = Image.open(path)
 
         while data is None:
-            # Create enhancer
-            enhancer = ImageEnhance.Sharpness(image)
 
-            # Enhance sharpness
-            enhancer.enhance(sharp_factor).save(path)
+            # # Create enhancer
+            # enhancer = ImageEnhance.Sharpness(image)
+
+            # # Enhance sharpness
+            # enhancer.enhance(sharp_factor).save(path)
+
 
             # Read the image
             frame = cv2.imread(path)
@@ -93,9 +95,18 @@ def process_image(media_path):
             # cv2.imwrite('final.jpg', thresh)
 
             data = decode_image(Image.fromarray(thresh))
-            sharp_factor = 1.01
+            
+            # Update path for sharpness processing
+            path = 'processed.jpg'
 
-            if time.time()-start > 30:
+            # Apply the UnsharpMask filter
+            sharpened_img = image.filter(ImageFilter.UnsharpMask(radius=20, percent=200))
+
+            # Save the result
+            sharpened_img.save(path)
+
+            if time.time()-start > 10:
+
                 break
 
     else:
@@ -114,5 +125,5 @@ if __name__ == '__main__':
     # Blurry
     path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/cf516005790f145d2d3b1bd14b8ac1a4'
     # Clear
-    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/8c572c35b962ba3efe50a776855c3036'
+    # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/8c572c35b962ba3efe50a776855c3036'
     print(process_image(path))
