@@ -5,7 +5,7 @@ READ method: if url, save locally->detect & decode->return lnaddress [doesn't wo
 
 from pyzbar.pyzbar import decode
 import qrcode
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFile
 import cv2
 import requests
 import os
@@ -37,7 +37,7 @@ def process_image(media_path):
         response.raise_for_status()
 
         # Save the image locally
-        path = 'QRread.jpg'
+        path = 'original.jpg'
         with open(path, 'wb') as f:
             f.write(response.content)
 
@@ -47,14 +47,17 @@ def process_image(media_path):
 
     if os.path.exists(path):
 
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
         data = None
         sharp_factor = 1.0
         start = time.time()
+        test = 1
+
+        # Open the image
+        image = Image.open(path)
+        # image.save('original.jpg', 'JPEG')
 
         while data is None:
-            # Open the image
-            image = Image.open(path)
-
             # Create enhancer
             enhancer = ImageEnhance.Sharpness(image)
 
@@ -70,29 +73,33 @@ def process_image(media_path):
             # Threshold the image to highlight QR codes
             _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
 
-            # Find contours in the thresholded image
-            contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            # # Find contours in the thresholded image
+            # contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-            # Filter out small contours based on area
-            contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
+            # # Filter out small contours based on area
+            # contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
 
-            # If any contours are found
-            if len(contours) > 0:
-                # Find the largest contour
-                cnt = max(contours, key=cv2.contourArea)
+            # # If any contours are found
+            # if len(contours) > 0:
+            #     # Find the largest contour
+            #     cnt = max(contours, key=cv2.contourArea)
                 
-                # Find bounding rect for the contour
-                x, y, w, h = cv2.boundingRect(cnt)
+            #     # Find bounding rect for the contour
+            #     x, y, w, h = cv2.boundingRect(cnt)
                 
-                # Crop the image to this bounding rect
-                cropped = thresh[y:y+h, x:x+w]
-            else:
-                cropped = thresh 
+            #     # Crop the image to this bounding rect
+            #     cropped = thresh[y:y+h, x:x+w]
+            # else:
+            #     cropped = thresh 
 
-            data = decode_image(Image.fromarray(cropped))
-            sharp_factor += 0.1
+            # cv2.imwrite('final.jpg', thresh)
 
-            if time.time()-start > 60 or sharp_factor > 100:
+            data = decode_image(Image.fromarray(thresh))
+            sharp_factor = 1.01
+            test += 1
+            print(sharp_factor)
+
+            if time.time()-start > 1:
                 break
     else:
         # Return response to Heroku
@@ -107,5 +114,8 @@ if __name__ == '__main__':
     # create_qrcode(string,'test.jpeg')
     # path = 'https://api.twilio.com/2010-04-01/Accounts/AC4b0fd142453f208bb5f81b6b8e9f844d/Messages/MMd5da0e2cbd46af04483164983eb6ef40/Media/ME5fc5a75e30abd4c7a57b9413d18d8a7f'
     # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
-    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/f45103e887587d40b7f08f6ec2267f8c'
+    # Blurry
+    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/cf516005790f145d2d3b1bd14b8ac1a4'
+    # Clear
+    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/8c572c35b962ba3efe50a776855c3036'
     print(process_image(path))
