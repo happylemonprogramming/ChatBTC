@@ -47,7 +47,7 @@ def process_image(media_path):
 
     if os.path.exists(path):
 
-        data = decode_image(Image.fromarray(cropped))
+        data = None
         sharp_factor = 1.0
         start = time.time()
 
@@ -88,11 +88,11 @@ def process_image(media_path):
                 cropped = thresh[y:y+h, x:x+w]
             else:
                 cropped = thresh 
-                
-            data = decode_image(Image.fromarray(cropped))
-            sharp_factor += 1.0
 
-            if time.time()-start > 60:
+            data = decode_image(Image.fromarray(cropped))
+            sharp_factor += 0.1
+
+            if time.time()-start > 60 or sharp_factor > 100:
                 break
     else:
         # Return response to Heroku
@@ -107,5 +107,5 @@ if __name__ == '__main__':
     # create_qrcode(string,'test.jpeg')
     # path = 'https://api.twilio.com/2010-04-01/Accounts/AC4b0fd142453f208bb5f81b6b8e9f844d/Messages/MMd5da0e2cbd46af04483164983eb6ef40/Media/ME5fc5a75e30abd4c7a57b9413d18d8a7f'
     # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
-    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/7fe353862cae739e35eef46bdff16ef7'
+    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/f45103e887587d40b7f08f6ec2267f8c'
     print(process_image(path))
