@@ -127,7 +127,7 @@ def sms_reply():
         reply.media(media_url)
 
         # Open subprocess to see if message gets paid
-        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body)])
+        subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body), lnbitsadmin])
         # TODO: integer body reads as $100.0 instead of $100.00
         return str(resp)
     

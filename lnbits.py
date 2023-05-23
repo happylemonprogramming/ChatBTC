@@ -74,8 +74,19 @@ def receiveinvoice(amount, memo, api_key):
 
     payment_request = response.json()['payment_request']
     payment_hash = response.json()['payment_hash']
-    
+
     return payment_request, payment_hash
+
+# Check Invoice Status
+def checkstatus(payment_hash, api_key):
+    url = f"https://legend.lnbits.com/api/v1/payments/{payment_hash}"
+    headers = {
+        "X-Api-Key": api_key,
+        "Content-type": "application/json"
+    }
+
+    response = requests.get(url, headers=headers)
+    return response.json()
 
 # Decode invoice
 def decodeinvoice(address, api_key):

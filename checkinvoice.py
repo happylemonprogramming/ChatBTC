@@ -12,6 +12,7 @@ start = time.time()
 payment_hash = sys.argv[1]
 from_number = sys.argv[2]
 amount = sys.argv[3]
+lnbitsadmin = sys.argv[4]
 
 # Environment variables
 twilioaccountsid = os.environ["twilioaccountsid"]
@@ -19,7 +20,7 @@ twilioauthtoken = os.environ["twilioauthtoken"]
 
 # Invoice check loop
 while True:
-    output = checkstatus(payment_hash)
+    output = checkstatus(payment_hash, lnbitsadmin)
     ''' Example:
          output = {'paid': False, 'preimage': '000...', 
                'details': {'checking_id': 'eb1256...', 'pending': True, 
