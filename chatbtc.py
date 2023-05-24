@@ -161,8 +161,8 @@ def sms_reply():
 
         # Start our TwiML response
         resp = MessagingResponse()
-        print(f'Decode2: "{decode[2]}"')
-        if decode[2] != None:
+
+        if decode[2] != "":
         # TODO: decode[2] shows "SMS wallet bot" instead of lightning memo
             text = f'Text "pay" to send ${decode[0]} for {decode[2]}'
         else:
