@@ -6,7 +6,6 @@ import os
 awssecret = os.environ["AWS_SECRET_ACCESS_KEY"]
 awsaccess = os.environ["AWS_ACCESS_KEY_ID"]
 
-# replace 'us-west-2', 'ACCESS_KEY' and 'SECRET_KEY' with your AWS region, access key and secret key respectively
 def save_to_dynamodb(phone_number, secret_key):
     try:
         dynamodb = boto3.resource('dynamodb', region_name='us-west-1', aws_access_key_id=awsaccess,
@@ -24,8 +23,7 @@ def save_to_dynamodb(phone_number, secret_key):
             
         )
 
-        print("PutItem succeeded:")
-        print(response)
+        print("PutItem succeeded")
 
     except NoCredentialsError:
         print("No AWS Credentials were found.")
@@ -48,12 +46,39 @@ def get_from_dynamodb(phone_number):
     else:
         return response['Item']
 
+def update_dynamodb(phone_number, key, value):
+    try:
+        dynamodb = boto3.resource('dynamodb', region_name='us-west-1', aws_access_key_id=awsaccess,
+                                  aws_secret_access_key=awssecret)
+
+        # specify your table name
+        table = dynamodb.Table('user_keys')
+
+        # update data in the table
+        response = table.update_item(
+           Key={
+                'phone_number': phone_number,
+            },
+            UpdateExpression='SET #k = :v',
+            ExpressionAttributeNames={
+                '#k' : key
+            },
+            ExpressionAttributeValues={
+                ':v' : value
+            }
+        )
+
+        print("UpdateItem succeeded")
+
+    except NoCredentialsError:
+        print("No AWS Credentials were found.")
+
 if __name__ == '__main__':
-    phone_number = '9'
+    phone_number = '+1234567890'
+    key = 'lnaddress'
+    value = 'lnbc1'
+
+    update_dynamodb(phone_number, key, value)
+    # save_to_dynamodb(phone_number, key, value)
     item = get_from_dynamodb(phone_number)
     print(item)
-
-    # phone_number = '8052018289'
-    # secret_key = '123abc'
-
-    # save_to_dynamodb(phone_number, secret_key)

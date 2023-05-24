@@ -6,6 +6,7 @@ import os
 
 from twilio.rest import Client
 from lnbits import payinvoice
+from database import get_from_dynamodb
 
 # Start clock and retreive argument
 start = time.time()
@@ -16,14 +17,18 @@ lnbitsadmin = sys.argv[2]
 twilioaccountsid = os.environ["twilioaccountsid"]
 twilioauthtoken = os.environ["twilioauthtoken"]
 
-# Read invoice from local memory
-with open('address.txt', 'r') as f:
-    address = f.read()
-status = payinvoice(address, lnbitsadmin)
+item = get_from_dynamodb(from_number)
+lnaddress = item['lnaddress']
+status = payinvoice(lnaddress, lnbitsadmin)
 
-# Remove temp file
-if status == "Success!":
-    os.remove('address.txt')
+# # Read invoice from local memory
+# with open('address.txt', 'r') as f:
+#     address = f.read()
+# status = payinvoice(address, lnbitsadmin)
+
+# # Remove temp file
+# if status == "Success!":
+#     os.remove('address.txt')
 
 # Twilio account verification
 account_sid = twilioaccountsid

@@ -152,9 +152,12 @@ def sms_reply():
         # Decode invoice
         decode = decodeinvoice(body, lnbitsadmin)
         
-        # Save to local memory
-        with open('address.txt', 'w') as f:
-            f.write(body)
+        # # Save to local memory
+        # with open('address.txt', 'w') as f:
+        #     f.write(body)
+
+        # Save to User's AWS
+        update_dynamodb(from_number, 'lnaddress', body)
 
         # Start our TwiML response
         resp = MessagingResponse()
@@ -186,9 +189,12 @@ def sms_reply():
             decode = decodeinvoice(content, lnbitsadmin)
             print(decode)
 
-            # Save to local memory
-            with open('address.txt', 'w') as f:
-                f.write(content)
+            # # Save to local memory
+            # with open('address.txt', 'w') as f:
+            #     f.write(content)
+
+            # Save to User's AWS
+            update_dynamodb(from_number, 'lnaddress', body)
 
             # Start our TwiML response
             resp = MessagingResponse()
@@ -196,22 +202,13 @@ def sms_reply():
 
     # Pay invoice
     elif body.lower() == 'pay':
-        if os.path.exists('address.txt'):
-            # Open subprocess to pay
-            subprocess.Popen(["python", "payinvoice.py", from_number, lnbitsadmin])
-            status = 'In process...'
-        else:
-            status = 'No payable address. Send lightning invoice.'
+        # Open subprocess to pay
+        subprocess.Popen(["python", "payinvoice.py", from_number, lnbitsadmin])
+        status = 'In process...'
 
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message(status)
-
-    # # Wrong number pay attempt error
-    # elif body.lower() == 'pay' and from_number != phone_number:
-    #     # Start our TwiML response
-    #     resp = MessagingResponse()
-    #     reply = resp.message('Nice try :)')
 
     # All else assumes prompt for bot
     else:
