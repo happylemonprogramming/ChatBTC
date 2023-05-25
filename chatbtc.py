@@ -9,12 +9,13 @@ ChatBTC
 
 chatbot
 give AI to all SMS users
-TODO: allow user to set their own prompt for bot
+TODO: allow user to set their own prompt for bot; can be achieved via AWS Database per user
+TODO: add api with weather (important for farmers); think of ways to incorporate AI to interface with the weather based on text
+    -"what's the weather like today in  
 
 wallet
 give wallet to all SMS users
 TODO: have wallets bound to phone numbers so that you can send bitcoin via phone number
-TODO: need a more consistent method of payment (cashapp and wallet of satoshi fail; strike ok)
 '''
 
 from flask import Flask, request, send_file, redirect, render_template, jsonify
@@ -26,6 +27,8 @@ from cloud import *
 from PIL import Image
 from urllib.parse import urlparse, parse_qs
 from database import *
+from extractnumber import *
+from twilioapi import *
 
 import os
 import subprocess
@@ -33,9 +36,7 @@ import time
 from io import BytesIO
 
 openai.api_key = os.environ["openaiapikey"]
-# lnbitsapikey = os.environ["lnbitsapikey"]
-phone_number = os.environ['phone_number']
-keys = {phone_number: lnbitsadminkey}
+# phone_number = os.environ['phone_number']
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get('flasksecret')
@@ -94,7 +95,100 @@ def sms_reply():
     # User needs help
     elif type(body) is str and body.lower() == 'commands':
         resp = MessagingResponse()
-        reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, or send a QR code MMS message to decode lightning address')
+        reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, or send a QR code MMS message to decode lightning invoice')
+
+    # TODO: SUPPORT LNURL
+        # Send dashingoption@walletofsatoshi.com $21 (definitely possible, but might require another API)
+        # Request dashingoption@walletofsatoshi.com $21 (need to associate phone number and lightning address)
+    # User wants to pay a peer using a phone number and with no invoice send
+        # Send 19095555555 $21
+        # Request 19095555555 $21
+        # Must be number that twilio can text otherwise funds cannot be extracted (try twilio first; on exception reply with error regarding number)
+
+    # User sends money (Example: "Send 19095555555 $21")
+    elif "send" in str(body.lower()):
+        # Extract "to number" and "amount" from body
+        to_number, amount = extract_numbers_and_amounts(str(body))
+
+        # Check balance
+        balance = getbalance(lnbitsadmin)
+        balance_sats = int(balance['balance']/1000)
+        
+        # Conversion to USD
+        convert = str(btctousd(balance_sats)['USD'])
+        index = convert.index('.')
+        balanceUSD = convert[:index+3]
+
+        if amount > balanceUSD:
+            # Message user
+            resp = MessagingResponse()
+            reply = resp.message(f'Your request to send ${amount} exceeds balance of ${balanceUSD}.')
+        else:
+            # Find friend in database
+            try:
+                item = get_from_dynamodb(to_number)
+                # "from_number" must be saved to extracted numbers database as latest "payee" for future use
+                update_dynamodb(to_number, 'payee', from_number)
+
+                # Get keys for invoice generation
+                recipients_keys = item['lnbitsadmin']
+
+                # Generate offer invoice for recipient
+                output = receiveinvoice(amount, "", recipients_keys)
+                offer = output[0]
+                offer_hash = output[1]
+
+                # Save as to_number's offer
+                update_dynamodb(to_number, 'offer', offer)
+                # Save as to_number's offer_hash
+                update_dynamodb(to_number, 'offer_hash', offer_hash)
+
+                # Message friend
+                message = f'You have been sent ${amount} in bitcoin from {from_number}. Text "Receive" to accept.'
+                smstext(to_number, message, None)
+
+                # Message user
+                resp = MessagingResponse()
+                reply = resp.message(f'${amount} offer sent to {to_number}.')
+
+            # If not in database run exception
+            except:
+                # Message user about exception
+                resp = MessagingResponse()
+                reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
+
+    # User intends to receive funds
+    elif "receive" in str(body.lower()):
+        # Extract payee and offer amount from database
+        recipient_data = get_from_dynamodb(from_number)
+        payee = recipient_data['payee']
+        offer = recipient_data['offer']
+        offer_hash = recipient_data['offer_hash']
+        offer_amount = decodeinvoice(offer, lnbitsadmin)[1]
+
+        # Get "payee" keys from database
+        payee_data = get_from_dynamodb(payee)
+        payee_keys = payee_data['lnbitsadmin']
+        
+        # Pay invoice with "payee" keys
+        # Open subprocess to pay
+        subprocess.Popen(["python", "payinvoice.py", offer, payee_keys, payee])
+        # Open subprocess to see if message gets paid
+        subprocess.Popen(["python", "checkinvoice.py", offer_hash, from_number, offer_amount, lnbitsadmin])
+        
+        # Reply to user
+        resp = MessagingResponse()
+        reply = resp.message('In process...')
+
+    # If "receive" and new number then it sends terms and requires reply of "accept and receive"
+    # If "accept and receive"...
+        # creates wallet for new number
+        # saves keys
+        # creates invoice
+        # "payee" keys used to pay invoice
+    # If "receive" and database number then generates invoice for friend of amount and user pays friends wallet
+    # If "request" and new number, return error because the friend for sure has no funds since new account (invite?)
+    # If "request" and database number, then saves invoice to friend "lninvoice" and texts friend the pay message
 
     # Generate lightning invoice
     elif body is not None and len(str(body)) > 0 and (str(body)[0] == '$' or isinstance(body, (int, float))):
@@ -102,20 +196,20 @@ def sms_reply():
             body = body[1:]
         # Convert input into sats
         sats = usdtobtc(body)['sats']
-        memo = 'SMS wallet bot'
+        memo = 'SMS wallet bot' #TODO: allow for user memos
 
-        # Create receive address
+        # Create receive invoice
         output = receiveinvoice(sats,memo,lnbitsadmin)
-        lnaddress = output[0]
+        lninvoice = output[0]
         payment_hash = output[1]
         
         # Create QR code
-        file = create_qrcode(lnaddress, filename='lightning.jpeg')
+        file = create_qrcode(lninvoice, filename='lightning.jpeg')
 
         # Start our TwiML response
         resp = MessagingResponse()
-        # Send lightning address
-        reply = resp.message(lnaddress)
+        # Send lightning invoice
+        reply = resp.message(lninvoice)
 
         # Add a picture message (.jpg, .gif)
         # Make the HEAD request
@@ -147,17 +241,13 @@ def sms_reply():
         resp = MessagingResponse()
         reply = resp.message(f'{wallet_name} has ${balanceUSD} ({balance_sats} sats)')
 
-    # Decode an invoice from lightning address string
+    # Decode an invoice from lightning invoice string
     elif body[0:4] == 'lnbc':
         # Decode invoice
         decode = decodeinvoice(body, lnbitsadmin)
-        
-        # # Save to local memory
-        # with open('address.txt', 'w') as f:
-        #     f.write(body)
 
         # Save to User's AWS
-        update_dynamodb(from_number, 'lnaddress', body)
+        update_dynamodb(from_number, 'lninvoice', body)
 
         # Start our TwiML response
         resp = MessagingResponse()
@@ -188,14 +278,9 @@ def sms_reply():
             
             # Decode invoice
             decode = decodeinvoice(content, lnbitsadmin)
-            print(decode)
-
-            # # Save to local memory
-            # with open('address.txt', 'w') as f:
-            #     f.write(content)
 
             # Save to User's AWS
-            update_dynamodb(from_number, 'lnaddress', body)
+            update_dynamodb(from_number, 'lninvoice', body)
 
             # Start our TwiML response
             resp = MessagingResponse()
@@ -203,8 +288,12 @@ def sms_reply():
 
     # Pay invoice
     elif body.lower() == 'pay':
+        # Get lninvoice
+        item = get_from_dynamodb(from_number)
+        lninvoice = item['lninvoice']
+
         # Open subprocess to pay
-        subprocess.Popen(["python", "payinvoice.py", from_number, lnbitsadmin])
+        subprocess.Popen(["python", "payinvoice.py", lninvoice, lnbitsadmin, from_number])
         status = 'In process...'
 
         # Start our TwiML response

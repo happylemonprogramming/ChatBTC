@@ -4,13 +4,14 @@ import time
 import sys
 import os
 
-from twilio.rest import Client
+# from twilio.rest import Client
+from twilioapi import *
 from lnbits import checkstatus
 
 # Start clock and retreive argument
 start = time.time()
 payment_hash = sys.argv[1]
-from_number = sys.argv[2]
+number = sys.argv[2]
 amount = sys.argv[3]
 lnbitsadmin = sys.argv[4]
 
@@ -29,7 +30,8 @@ while True:
                'expiry': 1683955230.0, 'extra': {}, 'wallet_id': '86...', 'webhook': None, 
                'webhook_status': None}}
     '''
-    if time.time() - start > 600: #10-minute expiration time
+    if output['time']>output['expiry']:
+    # if time.time() - start > 600: #10-minute expiration time
         msg = f'${amount} Invoice Expired'
         break
     elif output['paid'] == True:
@@ -40,17 +42,20 @@ while True:
         print(f"Invoice Paid: {output['paid']}. Elasped Time: {elasped_time}")
         time.sleep(2)
 
-# Twilio account verification
-account_sid = twilioaccountsid
-auth_token = twilioauthtoken
-client = Client(account_sid, auth_token)
 
-# Text message
-message = client.messages.create(
-from_='+19098940201',
-to=from_number,
-body=msg
-)
+smstext(number, msg, media_url=None)
 
-# Heroku prints
-print("Text Message ID: ", message.sid)
+# # Twilio account verification
+# account_sid = twilioaccountsid
+# auth_token = twilioauthtoken
+# client = Client(account_sid, auth_token)
+
+# # Text message
+# message = client.messages.create(
+# from_='+19098940201',
+# to=number,
+# body=msg
+# )
+
+# # Heroku prints
+# print("Text Message ID: ", message.sid)

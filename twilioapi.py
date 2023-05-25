@@ -5,9 +5,9 @@ import os
 # Environment variables
 twilioaccountsid = os.environ["twilioaccountsid"]
 twilioauthtoken = os.environ["twilioauthtoken"]
-phone_number = os.environ['phone_number']
+# phone_number = os.environ['phone_number']
 
-def smstext(body, media_url):
+def smstext(phone_number, body, media_url):
   client = Client(twilioaccountsid, twilioauthtoken)
   message = client.messages.create(
     from_='+19098940201',
