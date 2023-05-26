@@ -133,8 +133,11 @@ def sms_reply():
                 # Get keys for invoice generation
                 recipients_keys = item['lnbitsadmin']
                 print(recipients_keys)
+
+                # Convert dollars to sats
+                satsamount = btctousd(amount)
                 # Generate offer invoice for recipient
-                output = receiveinvoice(amount, "", recipients_keys)
+                output = receiveinvoice(satsamount, "", recipients_keys)
                 print(output)
                 offer = output[0]
                 print(offer)
