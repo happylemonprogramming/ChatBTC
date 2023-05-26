@@ -135,7 +135,7 @@ def sms_reply():
                 print(recipients_keys)
 
                 # Convert dollars to sats
-                satsamount = btctousd(amount)
+                satsamount = usdtobtc(amount)['sats']
                 # Generate offer invoice for recipient
                 output = receiveinvoice(satsamount, "", recipients_keys)
                 print(output)

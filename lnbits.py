@@ -20,7 +20,7 @@ def getbalance(api_key):
 
     return response.json()
 
-# Conversion to USD
+# Conversion to sats
 def usdtobtc(amount):
     url = 'https://legend.lnbits.com/api/v1/conversion'
 
@@ -37,7 +37,7 @@ def usdtobtc(amount):
     response = requests.post(url, headers=headers, json=data)
     return response.json()
 
-# Conversion to sats
+# Conversion to USD
 def btctousd(amount):
     url = 'https://legend.lnbits.com/api/v1/conversion'
 
