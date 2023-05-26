@@ -125,24 +125,20 @@ def sms_reply():
             reply = resp.message(f'Your request to send ${amount} exceeds balance of ${balanceUSD}.')
         else:
             # Find friend in database
-            # try:
+            try:
                 item = get_from_dynamodb(to_number)
                 # "from_number" must be saved to extracted numbers database as latest "payee" for future use
                 update_dynamodb(to_number, 'payee', from_number)
-                print(item)
+
                 # Get keys for invoice generation
                 recipients_keys = item['lnbitsadmin']
-                print(recipients_keys)
 
                 # Convert dollars to sats
                 satsamount = usdtobtc(amount)['sats']
                 # Generate offer invoice for recipient
                 output = receiveinvoice(satsamount, "", recipients_keys)
-                print(output)
                 offer = output[0]
-                print(offer)
                 offer_hash = output[1]
-                print(offer_hash)
 
                 # Save as to_number's offer
                 update_dynamodb(to_number, 'offer', offer)
@@ -158,10 +154,10 @@ def sms_reply():
                 reply = resp.message(f'${amount} offer sent to {to_number}.')
 
             # If not in database run exception
-            # except:
-            #     # Message user about exception
-            #     resp = MessagingResponse()
-            #     reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
+            except:
+                # Message user about exception
+                resp = MessagingResponse()
+                reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
 
     # User intends to receive funds
     elif "receive" in str(body.lower()):
@@ -170,7 +166,7 @@ def sms_reply():
         payee = recipient_data['payee']
         offer = recipient_data['offer']
         offer_hash = recipient_data['offer_hash']
-        offer_amount = decodeinvoice(offer, lnbitsadmin)[1]
+        offer_amount = str(decodeinvoice(offer, lnbitsadmin)[0])
 
         # Get "payee" keys from database
         payee_data = get_from_dynamodb(payee)
