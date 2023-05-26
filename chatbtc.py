@@ -125,7 +125,7 @@ def sms_reply():
             reply = resp.message(f'Your request to send ${amount} exceeds balance of ${balanceUSD}.')
         else:
             # Find friend in database
-            try:
+            # try:
                 item = get_from_dynamodb(to_number)
                 # "from_number" must be saved to extracted numbers database as latest "payee" for future use
                 update_dynamodb(to_number, 'payee', from_number)
@@ -158,10 +158,10 @@ def sms_reply():
                 reply = resp.message(f'${amount} offer sent to {to_number}.')
 
             # If not in database run exception
-            except:
-                # Message user about exception
-                resp = MessagingResponse()
-                reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
+            # except:
+            #     # Message user about exception
+            #     resp = MessagingResponse()
+            #     reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
 
     # User intends to receive funds
     elif "receive" in str(body.lower()):
