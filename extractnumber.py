@@ -11,7 +11,7 @@ def extract_numbers_and_amounts(string):
     amount = re.findall(amount_pattern, string)
     amount = amount[0] if amount else None
 
-    return phone_number, amount[1:]
+    return "+"+phone_number, amount[1:]
 
 
 if __name__ == "__main__":
