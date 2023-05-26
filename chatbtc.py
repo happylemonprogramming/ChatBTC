@@ -129,14 +129,17 @@ def sms_reply():
                 item = get_from_dynamodb(to_number)
                 # "from_number" must be saved to extracted numbers database as latest "payee" for future use
                 update_dynamodb(to_number, 'payee', from_number)
-
+                print(item)
                 # Get keys for invoice generation
                 recipients_keys = item['lnbitsadmin']
-
+                print(recipients_keys)
                 # Generate offer invoice for recipient
                 output = receiveinvoice(amount, "", recipients_keys)
+                print(output)
                 offer = output[0]
+                print(offer)
                 offer_hash = output[1]
+                print(offer_hash)
 
                 # Save as to_number's offer
                 update_dynamodb(to_number, 'offer', offer)
