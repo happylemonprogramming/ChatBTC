@@ -2,9 +2,6 @@
 
 import time
 import sys
-import os
-
-# from twilio.rest import Client
 from twilioapi import *
 from lnbits import checkstatus
 
@@ -15,14 +12,8 @@ number = sys.argv[2]
 amount = sys.argv[3]
 lnbitsadmin = sys.argv[4]
 
-# Ensure dollar units are $0.00
-if '.' in amount:
-    index = amount.index('.')
-    amount = amount[:index+3]
-
-# Environment variables
-twilioaccountsid = os.environ["twilioaccountsid"]
-twilioauthtoken = os.environ["twilioauthtoken"]
+# Convert amount to dollar unit format $X.XX
+amount = "{:.2f}".format(float(amount))
 
 # Invoice check loop
 while True:
@@ -48,20 +39,5 @@ while True:
         print(f"Invoice Paid: {output['paid']}. Elasped Time: {elasped_time}")
         time.sleep(2)
 
-
+# Send text notification
 smstext(number, msg, media_url=None)
-
-# # Twilio account verification
-# account_sid = twilioaccountsid
-# auth_token = twilioauthtoken
-# client = Client(account_sid, auth_token)
-
-# # Text message
-# message = client.messages.create(
-# from_='+19098940201',
-# to=number,
-# body=msg
-# )
-
-# # Heroku prints
-# print("Text Message ID: ", message.sid)

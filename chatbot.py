@@ -3,12 +3,9 @@
 import openai
 import os
 import sys
-# from twilio.rest import Client
 from twilioapi import *
 
 # Environment variables
-# twilioaccountsid = os.environ["twilioaccountsid"]
-# twilioauthtoken = os.environ["twilioauthtoken"]
 openai.api_key = os.environ["openaiapikey"]
 
 body = sys.argv[1]
@@ -29,17 +26,6 @@ try:
 
 except:
     smstext(from_number, 'Try again later, AI server overloaded :(', media_url=None)
-    # # Twilio account verification
-    # account_sid = twilioaccountsid
-    # auth_token = twilioauthtoken
-    # client = Client(account_sid, auth_token)
-
-    # # Text message
-    # message = client.messages.create(
-    # from_='+19098940201',
-    # to=from_number,
-    # body='Try again later, AI server overloaded :('
-    # )
 
 # Total AI cost, does not include Twilio fees or Carrier SMS/MMS fees
 cost = float(0.002 * int(output['usage']['total_tokens'])/1000)
@@ -60,17 +46,3 @@ else:
 for content in chunks:
     msg = content
     smstext(from_number, msg, media_url=None)
-    # # Twilio account verification
-    # account_sid = twilioaccountsid
-    # auth_token = twilioauthtoken
-    # client = Client(account_sid, auth_token)
-
-    # # Text message
-    # message = client.messages.create(
-    # from_='+19098940201',
-    # to=from_number,
-    # body=msg
-    # )
-
-    # # Heroku prints
-    # print("Text Message ID: ", message.sid)

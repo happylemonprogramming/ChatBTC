@@ -19,8 +19,7 @@ def save_to_dynamodb(phone_number, secret_key):
            Item={
                 'phone_number': phone_number,
                 'lnbitsadmin': secret_key   # Include this key
-            }
-            
+            }   
         )
 
         print("PutItem succeeded")
