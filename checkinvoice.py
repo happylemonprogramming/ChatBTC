@@ -15,6 +15,11 @@ number = sys.argv[2]
 amount = sys.argv[3]
 lnbitsadmin = sys.argv[4]
 
+# Ensure dollar units are $0.00
+if '.' in amount:
+    index = amount.index('.')
+    amount = amount[:index+3]
+
 # Environment variables
 twilioaccountsid = os.environ["twilioaccountsid"]
 twilioauthtoken = os.environ["twilioauthtoken"]
