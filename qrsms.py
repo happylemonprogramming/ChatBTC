@@ -50,9 +50,7 @@ def process_image(media_path):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         data = None
         sharp_factor = 1.0
-        start = time.time()
-        
-
+        start = time.time()        
 
         while data is None:
 

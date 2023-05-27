@@ -109,9 +109,12 @@ def decodeinvoice(address, api_key):
 
     # Variables of interest
     amount = int(json_data['amount_msat']/1000)
-    amountUSD = round(btctousd(amount)['USD'],2)
+    # amountUSD = round(btctousd(amount)['USD'],2)
+    amountUSD = "{:.2f}".format(float(btctousd(amount)['USD']))
     expiry = json_data['expiry']
     description = json_data['description']
+    # TODO: amountUSD = $1.0
+
     return amountUSD, amount, description, expiry
 
 # Pay invoice
@@ -133,6 +136,7 @@ def payinvoice(address, api_key):
     if 'payment_hash' in key_list:
         return 'Success!'
     else:
+        print(response.json())
         return response.json()['detail']
 
 def createwallet(from_number):

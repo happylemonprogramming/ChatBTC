@@ -13,6 +13,6 @@ number = sys.argv[3]
 
 # Pay invoice and save response
 status = payinvoice(lninvoice, lnbitsadmin)
-
+print(status)
 # Send text notification
 smstext(number, status, media_url=None)

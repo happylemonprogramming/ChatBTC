@@ -15,7 +15,8 @@ TODO: add api with weather (important for farmers); think of ways to incorporate
 
 wallet
 give wallet to all SMS users
-TODO: have wallets bound to phone numbers so that you can send bitcoin via phone number
+TODO: add whatsapp
+TODO: add LNURL
 '''
 
 from flask import Flask, request, send_file, redirect, render_template, jsonify
@@ -51,7 +52,8 @@ def error_reply():
 
 @app.route("/dev", methods=['GET', 'POST'])
 def development():
-    img = Image.open('lightning.jpeg')
+    from_number = request.values.get('From', None)
+    img = Image.open(f'{from_number}.jpeg')
     bytes_io = BytesIO()
     img.save(bytes_io, format='BMP') # only image file type accepted without fail
     bytes_io.seek(0)  # move the cursor to the beginning of the file
@@ -79,13 +81,13 @@ def sms_reply():
         user = None
 
     # Service agreement
-    if user == None and body.lower() != 'accept':
+    if user == None and (body.lower() == 'accept' or body.lower() == "accept "):
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
 
     # User accepts terms
-    elif type(body) is str and body.lower() == 'accept' and user == None:
+    elif type(body) is str and (body.lower() == 'accept' or body.lower() == "accept ") and user == None:
         wallet_data = createwallet(from_number)
         lnbitsadmin = wallet_data['adminkey']
         save_to_dynamodb(from_number, lnbitsadmin)
@@ -93,7 +95,7 @@ def sms_reply():
         reply = resp.message('Your wallet has been created! AI chatbot unlocked! Text "commands" to learn more.')
 
     # User needs help
-    elif type(body) is str and body.lower() == 'commands':
+    elif str(body.lower()) == 'commands' or str(body.lower()) == 'commands ':
         resp = MessagingResponse()
         reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, or send a QR code MMS message to decode lightning invoice')
 
@@ -106,7 +108,7 @@ def sms_reply():
         # Must be number that twilio can text otherwise funds cannot be extracted (try twilio first; on exception reply with error regarding number)
 
     # User sends money (Example: "Send 19095555555 $21")
-    elif "send" in str(body.lower()):
+    elif str(body.lower()) == "send" or str(body.lower()) == "send ":
         # Extract "to number" and "amount" from body
         to_number, amount = extract_numbers_and_amounts(str(body))
 
@@ -160,7 +162,7 @@ def sms_reply():
                 reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
 
     # User intends to receive funds
-    elif "receive" in str(body.lower()):
+    elif "receive" or "receive " or "recieve" in str(body.lower()):
         # Extract payee and offer amount from database
         recipient_data = get_from_dynamodb(from_number)
         payee = recipient_data['payee']
@@ -206,7 +208,7 @@ def sms_reply():
         payment_hash = output[1]
         
         # Create QR code
-        file = create_qrcode(lninvoice, filename='lightning.jpeg')
+        file = create_qrcode(lninvoice, from_number)
 
         # Start our TwiML response
         resp = MessagingResponse()
@@ -277,19 +279,19 @@ def sms_reply():
                 parsed_url = urlparse(content)
                 query_params = parse_qs(parsed_url.query)
                 content = query_params.get('lightning', [None])[0]
-            
+            print(content)
             # Decode invoice
             decode = decodeinvoice(content, lnbitsadmin)
 
             # Save to User's AWS
-            update_dynamodb(from_number, 'lninvoice', body)
+            update_dynamodb(from_number, 'lninvoice', content)
 
             # Start our TwiML response
             resp = MessagingResponse()
             reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     # Pay invoice
-    elif body.lower() == 'pay':
+    elif body.lower() == 'pay' or body.lower() == 'pay ':
         # Get lninvoice
         item = get_from_dynamodb(from_number)
         lninvoice = item['lninvoice']
