@@ -115,7 +115,7 @@ def sms_reply():
         # Must be number that twilio can text otherwise funds cannot be extracted (try twilio first; on exception reply with error regarding number)
 
     # User sends money (Example: "Send 19095555555 $21")
-    elif "send" in str(body.lower()):
+    elif "send" in str(body.lower()) and "$" in str(body):
         # Extract "to number" and "amount" from body
         to_number, amount = extract_numbers_and_amounts(str(body))
 
