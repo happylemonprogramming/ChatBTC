@@ -14,7 +14,7 @@ TODO: add api with weather (important for farmers); think of ways to incorporate
     -"what's the weather like today in  
 
 wallet
-give wallet to all SMS users
+give banking to all SMS users
 TODO: add whatsapp
 TODO: add LNURL
 '''
@@ -115,7 +115,7 @@ def sms_reply():
         # Must be number that twilio can text otherwise funds cannot be extracted (try twilio first; on exception reply with error regarding number)
 
     # User sends money (Example: "Send 19095555555 $21")
-    elif str(body.lower()) == "send" or str(body.lower()) == "send ":
+    elif "send" in str(body.lower()):
         # Extract "to number" and "amount" from body
         to_number, amount = extract_numbers_and_amounts(str(body))
 

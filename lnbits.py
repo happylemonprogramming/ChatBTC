@@ -103,7 +103,7 @@ def decodeinvoice(address, api_key):
 
     response = requests.post(url, data=json.dumps(data), headers=headers)
     json_data = response.json()
-
+    print(json_data)
     # Get list of keys
     keys_list = list(json_data.keys())
 
