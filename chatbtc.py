@@ -82,6 +82,7 @@ def sms_reply():
     try:
         item = get_from_dynamodb(from_number)
         lnbitsadmin = item['lnbitsadmin']
+        # TODO: store password for future payments
         user = from_number
     except:
         user = None
@@ -201,7 +202,7 @@ def sms_reply():
     # If "request" and database number, then saves invoice to friend "lninvoice" and texts friend the pay message
 
     # Generate lightning invoice
-    elif (str(body)[0] == '$' or isinstance(body, (int, float))):
+    elif str(body) != "" and (str(body)[0] == '$' or isinstance(body, (int, float))):
         if str(body)[0] == '$':
             body = body[1:]
         # Convert input into sats
@@ -252,7 +253,7 @@ def sms_reply():
         reply = resp.message(f'{wallet_name} has ${balanceUSD} ({balance_sats} sats)')
 
     # Decode an invoice from lightning invoice string
-    elif body[0:4] == 'lnbc':
+    elif len(body) > 4 and body[0:4] == 'lnbc':
         # Decode invoice
         decode = decodeinvoice(body, lnbitsadmin)
 
@@ -297,6 +298,7 @@ def sms_reply():
             reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     # Pay invoice
+    # TODO: consider making a password so that nobody can pay but your number and password combo
     elif str(body.lower()) == 'pay' or str(body.lower()) == 'pay ':
         # Get lninvoice
         item = get_from_dynamodb(from_number)

@@ -26,10 +26,10 @@ while True:
                'expiry': 1683955230.0, 'extra': {}, 'wallet_id': '86...', 'webhook': None, 
                'webhook_status': None}}
     '''
-    print(output)
+    # print(output)
     current_time = output['details']['time']
     expiry = output['details']['expiry']
-    print(current_time, expiry,(expiry-current_time)/60)
+    # print(current_time, expiry,(expiry-current_time)/60)
     if current_time>expiry:
         msg = f'${amount} Invoice Expired'
         break
