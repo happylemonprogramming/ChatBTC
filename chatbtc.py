@@ -53,6 +53,7 @@ def error_reply():
 @app.route("/dev", methods=['GET', 'POST'])
 def development():
     from_number = request.values.get('From', None)
+    print(from_number)
     img = Image.open(f'{from_number}.jpeg')
     bytes_io = BytesIO()
     img.save(bytes_io, format='BMP') # only image file type accepted without fail
@@ -195,12 +196,12 @@ def sms_reply():
     # If "request" and database number, then saves invoice to friend "lninvoice" and texts friend the pay message
 
     # Generate lightning invoice
-    elif body is not None and len(str(body)) > 0 and (str(body)[0] == '$' or isinstance(body, (int, float))):
+    elif (str(body)[0] == '$' or isinstance(body, (int, float))):
         if str(body)[0] == '$':
             body = body[1:]
         # Convert input into sats
         sats = usdtobtc(body)['sats']
-        memo = 'SMS wallet bot' #TODO: allow for user memos
+        memo = 'SMS Bot'
 
         # Create receive invoice
         output = receiveinvoice(sats,memo,lnbitsadmin)

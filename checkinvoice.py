@@ -27,7 +27,10 @@ while True:
                'webhook_status': None}}
     '''
     print(output)
-    if output['details']['time']>output['details']['expiry']:
+    current_time = output['details']['time']
+    expiry = output['details']['expiry']
+    print(current_time, expiry,expiry-current_time)
+    if current_time>expiry:
     # if time.time() - start > 600: #10-minute expiration time
         msg = f'${amount} Invoice Expired'
         break

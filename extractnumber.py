@@ -25,6 +25,18 @@ def extract_numbers_and_amounts(string):
 
     return phone_number, amount
 
+def extract_amounts(string):
+    # Pattern to match dollar amounts
+    amount_pattern = r'\$\d+(?:\.\d+)?'
+    amount = re.findall(amount_pattern, string)
+    amount = amount[0] if amount else None
+
+    # If amount is found, we remove the dollar sign
+    if amount:
+        amount_raw = amount[1:]
+
+    return amount, amount_raw
+
 
 if __name__ == "__main__":
     string1 = "Send 19095555555 $21"
