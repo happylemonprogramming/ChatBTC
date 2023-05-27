@@ -81,7 +81,7 @@ def sms_reply():
         user = None
 
     # Service agreement
-    if user == None and (body.lower() == 'accept' or body.lower() == "accept "):
+    if user == None and (body.lower() != 'accept' or body.lower() != "accept "):
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
@@ -162,7 +162,7 @@ def sms_reply():
                 reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
 
     # User intends to receive funds
-    elif "receive" or "receive " or "recieve" in str(body.lower()):
+    elif str(body.lower()) == "receive" or str(body.lower()) == "receive ":
         # Extract payee and offer amount from database
         recipient_data = get_from_dynamodb(from_number)
         payee = recipient_data['payee']
@@ -291,7 +291,7 @@ def sms_reply():
             reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
 
     # Pay invoice
-    elif body.lower() == 'pay' or body.lower() == 'pay ':
+    elif str(body.lower()) == 'pay' or str(body.lower()) == 'pay ':
         # Get lninvoice
         item = get_from_dynamodb(from_number)
         lninvoice = item['lninvoice']
