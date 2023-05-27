@@ -35,6 +35,7 @@ import os
 import subprocess
 import time
 from io import BytesIO
+import uuid
 
 openai.api_key = os.environ["openaiapikey"]
 # phone_number = os.environ['phone_number']
@@ -52,9 +53,13 @@ def error_reply():
 
 @app.route("/dev", methods=['GET', 'POST'])
 def development():
-    from_number = request.values.get('From', None)
-    print(from_number)
-    img = Image.open(f'{from_number}.jpeg')
+    # # Generate a unique identifier and convert it to a string
+    # unique_id = str(uuid.uuid4())
+    # # Use the unique identifier in a filename
+    # filename = f"lninvoice_{unique_id}.jpeg"
+    # get_from_dynamodb(phone_number)
+    # TODO: can't do unique ID because it needs to pass from server, but can't access server because number isn't passed
+    img = Image.open("lightning.jpeg")
     bytes_io = BytesIO()
     img.save(bytes_io, format='BMP') # only image file type accepted without fail
     bytes_io.seek(0)  # move the cursor to the beginning of the file
@@ -209,7 +214,7 @@ def sms_reply():
         payment_hash = output[1]
         
         # Create QR code
-        file = create_qrcode(lninvoice, from_number)
+        file = create_qrcode(lninvoice, filename='lightning.jpeg')
 
         # Start our TwiML response
         resp = MessagingResponse()

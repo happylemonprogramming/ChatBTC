@@ -29,9 +29,8 @@ while True:
     print(output)
     current_time = output['details']['time']
     expiry = output['details']['expiry']
-    print(current_time, expiry,expiry-current_time)
+    print(current_time, expiry,(expiry-current_time)/60)
     if current_time>expiry:
-    # if time.time() - start > 600: #10-minute expiration time
         msg = f'${amount} Invoice Expired'
         break
     elif output['paid'] == True:

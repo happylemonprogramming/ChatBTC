@@ -14,7 +14,7 @@ import time
 # Generate QR Code
 def create_qrcode(input, filename):
     img = qrcode.make(input)
-    img.save(filename+'.jpeg') #needs to be a hyperlink
+    img.save(filename) #needs to be a hyperlink
     return filename, img
 
 # Decode QR Code
