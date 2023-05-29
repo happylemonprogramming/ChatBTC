@@ -104,7 +104,7 @@ def sms_reply():
     # User needs help
     elif str(body.lower()) == 'commands' or str(body.lower()) == 'commands ':
         resp = MessagingResponse()
-        reply = resp.message('Text a question for the bot or use any of these commands: "balance" to view wallet balance, "$1.21" to generate invoice for $1.21, "lnbc..." to decode lightning invoice, or send a QR code MMS message to decode lightning invoice')
+        reply = resp.message('Text anything to chat\nText "balance" to view wallet\nText "send <number> $<amount>" to transfer money\nSend image of QR code to decode\nText "$<amount>" to create invoice\nText BOLT11 invoice to decode')
 
     # TODO: SUPPORT LNURL
         # Send dashingoption@walletofsatoshi.com $21 (definitely possible, but might require another API)
@@ -287,15 +287,21 @@ def sms_reply():
                 query_params = parse_qs(parsed_url.query)
                 content = query_params.get('lightning', [None])[0]
             print(content)
-            # Decode invoice
-            decode = decodeinvoice(content, lnbitsadmin)
 
-            # Save to User's AWS
-            update_dynamodb(from_number, 'lninvoice', content)
+            if len(content) > 4 and content[0:4] == "lnbc":
+                # Decode invoice
+                decode = decodeinvoice(content, lnbitsadmin)
 
-            # Start our TwiML response
-            resp = MessagingResponse()
-            reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+                # Save to User's AWS
+                update_dynamodb(from_number, 'lninvoice', content)
+
+                # Start our TwiML response
+                resp = MessagingResponse()
+                reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+            else:
+                # Start our TwiML response
+                resp = MessagingResponse()
+                reply = resp.message(content)
 
     # Pay invoice
     # TODO: consider making a password so that nobody can pay but your number and password combo
