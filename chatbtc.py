@@ -37,6 +37,7 @@ import subprocess
 import time
 from io import BytesIO
 import uuid
+import datetime
 
 openai.api_key = os.environ["openaiapikey"]
 # phone_number = os.environ['phone_number']
@@ -327,14 +328,31 @@ def sms_reply():
         reply = resp.message(status)
 
     elif 'weather' in str(body.lower()):
+            # Get weather data
             location = extract_location(body)
             lat, lon = get_coordinates(location)
             weather = get_weather(lat,lon)
             current_weather = weather['current']
-            # Open subprocess to allow ChatGPT time to think
-            prompt = f'Explain this data in a conversational tone and convert any relevant units into metric and imperial: {current_weather}'
-            subprocess.Popen(["python", "chatbot.py", prompt, from_number])
-            resp = 'Thinking...' # Need these to return 'str(resp)' for higher level sms_reply() function
+            sunrise = datetime.datetime.utcfromtimestamp(current_weather['sunrise'])
+            sunset = datetime.datetime.utcfromtimestamp(current_weather['sunrise'])
+            feels_likeC = float(current_weather['feels_like'])-273.15
+            feels_likeF = (9/5)*(feels_likeC)+32.00
+            humidity = current_weather['humidity']
+            cloudiness = current_weather['clouds']
+            wind_speed_metric = float(current_weather['wind_speed'])
+            wind_speed_imperial = round(wind_speed_metric*2.236936, 2)
+
+            # Compose text
+            text = f'Weather for {location}\nSunrise: {sunrise}\nSunset: {sunset}\nFeels Like: {feels_likeC}C ({feels_likeF}F)\nCloudiness: {cloudiness}%\nHumidity: {humidity}%\nWind Speed: {wind_speed_metric}m/s ({wind_speed_imperial}mph)'
+            
+            # Start our TwiML response
+            resp = MessagingResponse()
+            reply = resp.message(text)
+
+            # # Open subprocess to allow ChatGPT time to think
+            # prompt = f'Explain this data as concisely as possible (limiting the number of words in the reply) in a conversational tone and convert any relevant units into metric and imperial: {current_weather}'
+            # subprocess.Popen(["python", "chatbot.py", prompt, from_number])
+            # resp = 'Thinking...' # Need these to return 'str(resp)' for higher level sms_reply() function
 
     # All else assumes prompt for bot
     else:
