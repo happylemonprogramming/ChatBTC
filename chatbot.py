@@ -23,7 +23,7 @@ try:
             # TODO consider recursive calls to the assistant that allows the assistant to have context
         ]
     )
-
+    print(output['choices'][0]['message']['content'])
 except:
     smstext(from_number, 'Try again later, AI server overloaded :(', media_url=None)
 

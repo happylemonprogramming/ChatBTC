@@ -229,7 +229,7 @@ def sms_reply():
         response = requests.head(media_url)
 
         # Print the Content-Type to verify for Twilio
-        print(response.headers['Content-Type'])
+        # print(response.headers['Content-Type'])
         reply.media(media_url)
 
         # Open subprocess to see if message gets paid
@@ -280,14 +280,13 @@ def sms_reply():
 
             # Process Image
             content = process_image(media_url)
-            print(content)
 
             # For Cashapp QR Codes
             if content.startswith("bitcoin:") or content.startswith("lightning="):
                 parsed_url = urlparse(content)
                 query_params = parse_qs(parsed_url.query)
                 content = query_params.get('lightning', [None])[0]
-            print(content)
+            print('QR Decoded: ', content)
 
             if len(content) > 4 and content.lower()[0:4] == "lnbc":
                 # Decode invoice

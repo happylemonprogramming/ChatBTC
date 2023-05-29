@@ -17,7 +17,7 @@ def smstext(phone_number, body, media_url):
   )
 
   # Print the Content-Type
-  print(message.sid)
+  # print(message.sid)
   print('Text Message Sent')
 
 

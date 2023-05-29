@@ -30,7 +30,7 @@ def save_to_dynamodb(phone_number, secret_key):
 def get_from_dynamodb(phone_number):
     dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
     table = dynamodb.Table('user_keys')
-    print(table)
+    # print(table)
 
     try:
         response = table.get_item(
