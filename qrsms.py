@@ -49,7 +49,7 @@ def process_image(media_path):
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         data = None
-        sharp_factor = 1.0
+        # sharp_factor = 1.0
         start = time.time()        
 
         while data is None:
@@ -71,27 +71,6 @@ def process_image(media_path):
 
             # Threshold the image to highlight QR codes
             _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-
-            # # Find contours in the thresholded image
-            # contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-            # # Filter out small contours based on area
-            # contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 2000]
-
-            # # If any contours are found
-            # if len(contours) > 0:
-            #     # Find the largest contour
-            #     cnt = max(contours, key=cv2.contourArea)
-                
-            #     # Find bounding rect for the contour
-            #     x, y, w, h = cv2.boundingRect(cnt)
-                
-            #     # Crop the image to this bounding rect
-            #     cropped = thresh[y:y+h, x:x+w]
-            # else:
-            #     cropped = thresh 
-
-            # cv2.imwrite('final.jpg', thresh)
 
             data = decode_image(Image.fromarray(thresh))
             
@@ -117,14 +96,14 @@ def process_image(media_path):
     return data 
 
 if __name__ == '__main__':
-    # string = 'yo gangster thug g-meister'
-    # create_qrcode(string,'test.jpeg')
+    string = 'Aloha g-meister'
+    create_qrcode(string,'test.jpeg')
     # path = 'https://api.twilio.com/2010-04-01/Accounts/AC4b0fd142453f208bb5f81b6b8e9f844d/Messages/MMd5da0e2cbd46af04483164983eb6ef40/Media/ME5fc5a75e30abd4c7a57b9413d18d8a7f'
     # path = r"C:\Users\clayt\Documents\Programming\ChatBTC\fileread.jpg"
     # Blurry
-    path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/9c19de83757190e6db3b1d3090ded921'
+    # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/9c19de83757190e6db3b1d3090ded921'
     # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/cf516005790f145d2d3b1bd14b8ac1a4'
     # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/b6e88dadbcf271947fb03ec150b1b0be'
     # Clear
     # path = 'https://s3-external-1.amazonaws.com/media.twiliocdn.com/AC4b0fd142453f208bb5f81b6b8e9f844d/8c572c35b962ba3efe50a776855c3036'
-    print(process_image(path))
+    # print(process_image(path))

@@ -30,6 +30,7 @@ from urllib.parse import urlparse, parse_qs
 from database import *
 from extractnumber import *
 from twilioapi import *
+from weather import *
 
 import os
 import subprocess
@@ -288,7 +289,7 @@ def sms_reply():
                 content = query_params.get('lightning', [None])[0]
             print(content)
 
-            if len(content) > 4 and content[0:4] == "lnbc":
+            if len(content) > 4 and content.lower()[0:4] == "lnbc":
                 # Decode invoice
                 decode = decodeinvoice(content, lnbitsadmin)
 
@@ -297,7 +298,15 @@ def sms_reply():
 
                 # Start our TwiML response
                 resp = MessagingResponse()
-                reply = resp.message(f'Text "pay" to send ${decode[0]} for {decode[2]}')
+
+                if decode[2] != "":
+                # TODO: decode[2] shows "SMS wallet bot" instead of lightning memo
+                    text = f'Text "pay" to send ${decode[0]} for {decode[2]}'
+                else:
+                    text = f'Text "pay" to send ${decode[0]}'
+                
+                reply = resp.message(text)
+
             else:
                 # Start our TwiML response
                 resp = MessagingResponse()
@@ -317,6 +326,15 @@ def sms_reply():
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message(status)
+
+    elif 'weather' in str(body.lower()):
+            location = extract_location(body)
+            lat, lon = get_coordinates(location)
+            weather = get_weather(lat,lon)
+            # Open subprocess to allow ChatGPT time to think
+            prompt = f'Answer the following question given the following data./nQuestion: {body}/nData:{weather}'
+            subprocess.Popen(["python", "chatbot.py", prompt, from_number])
+            resp = 'Thinking...' # Need these to return 'str(resp)' for higher level sms_reply() function
 
     # All else assumes prompt for bot
     else:
