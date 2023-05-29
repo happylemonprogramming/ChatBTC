@@ -334,16 +334,17 @@ def sms_reply():
             weather = get_weather(lat,lon)
             current_weather = weather['current']
             sunrise = datetime.datetime.utcfromtimestamp(current_weather['sunrise'])
-            sunset = datetime.datetime.utcfromtimestamp(current_weather['sunrise'])
-            feels_likeC = float(current_weather['feels_like'])-273.15
-            feels_likeF = (9/5)*(feels_likeC)+32.00
+            sunset = datetime.datetime.utcfromtimestamp(current_weather['sunset'])
+            feels_likeC = round(float(current_weather['feels_like'])-273.15,2)
+            feels_likeF = round((9/5)*(feels_likeC)+32.00,2)
             humidity = current_weather['humidity']
             cloudiness = current_weather['clouds']
-            wind_speed_metric = float(current_weather['wind_speed'])
+            wind_speed_metric = round(float(current_weather['wind_speed']),2)
             wind_speed_imperial = round(wind_speed_metric*2.236936, 2)
+            description = current_weather['weather'][0]['description'].title()
 
             # Compose text
-            text = f'Weather for {location}\nSunrise: {sunrise}\nSunset: {sunset}\nFeels Like: {feels_likeC}C ({feels_likeF}F)\nCloudiness: {cloudiness}%\nHumidity: {humidity}%\nWind Speed: {wind_speed_metric}m/s ({wind_speed_imperial}mph)'
+            text = f'Weather for {location}\nDescription: {description}\nFeels Like: {feels_likeC}C ({feels_likeF}F)\nCloudiness: {cloudiness}%\nSunrise: {sunrise}\nSunset: {sunset}\nHumidity: {humidity}%\nWind Speed: {wind_speed_metric}m/s ({wind_speed_imperial}mph)'
             
             # Start our TwiML response
             resp = MessagingResponse()
