@@ -330,8 +330,9 @@ def sms_reply():
             location = extract_location(body)
             lat, lon = get_coordinates(location)
             weather = get_weather(lat,lon)
+            current_weather = weather['current']
             # Open subprocess to allow ChatGPT time to think
-            prompt = f'Answer the following question given the following data./nQuestion: {body}/nData:{weather}'
+            prompt = f'Answer the following question given the following data./nQuestion: {body}/nData:{current_weather}'
             subprocess.Popen(["python", "chatbot.py", prompt, from_number])
             resp = 'Thinking...' # Need these to return 'str(resp)' for higher level sms_reply() function
 
