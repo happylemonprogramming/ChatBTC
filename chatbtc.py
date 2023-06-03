@@ -94,6 +94,8 @@ def sms_reply():
     if not user and str(body.lower().strip()) != 'accept':
     # if user == None and (body.lower() != 'accept' or body.lower() != "accept "):
         # Start our TwiML response
+        print(from_number)
+        print(user, type(user), body, type(body))
         resp = MessagingResponse()
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
 
