@@ -72,8 +72,9 @@ def sms_reply():
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
-    print(from_number)
     num_media = int(request.values.get('NumMedia', 0))
+    print(from_number)
+    print(user, type(user), body, type(body))
 
     try:
         body = float(body)
@@ -88,8 +89,6 @@ def sms_reply():
         user = from_number
     except:
         user = None
-
-    print(user, type(user), body, type(body))
 
     # Service agreement
     if not user and str(body.lower().strip()) != 'accept':
@@ -110,7 +109,7 @@ def sms_reply():
     # User needs help
     elif str(body.lower().strip()) == 'commands':
         resp = MessagingResponse()
-        reply = resp.message('Text anything to chat\nText "balance" to view wallet\nText "send <number> $<amount>" to transfer money\nSend image of QR code to decode\nText "$<amount>" to create invoice\nText BOLT11 invoice to decode')
+        reply = resp.message('Text anything to chat\nText "balance" to view wallet\nText "send <number> $<amount>" to transfer money\nSend image of QR code to decode\nText "$<amount>" to create invoice\nText lightning invoice to decode')
 
     # TODO: SUPPORT LNURL
         # Send dashingoption@walletofsatoshi.com $21 (definitely possible, but might require another API)
