@@ -73,8 +73,6 @@ def sms_reply():
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
     num_media = int(request.values.get('NumMedia', 0))
-    print(from_number)
-    print(user, type(user), body, type(body))
 
     try:
         body = float(body)
@@ -90,12 +88,13 @@ def sms_reply():
     except:
         user = None
 
+    print(user, type(user), body, type(body))
+
     # Service agreement
     if not user and str(body.lower().strip()) != 'accept':
     # if user == None and (body.lower() != 'accept' or body.lower() != "accept "):
         # Start our TwiML response
-        print(from_number)
-        print(user, type(user), body, type(body))
+
         resp = MessagingResponse()
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
 
