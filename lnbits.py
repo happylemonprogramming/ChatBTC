@@ -160,14 +160,7 @@ def createwallet(from_number):
     return wallet_data
 
 if __name__ == "__main__":
-    from_number = 9095555555
-    wallet_data = createwallet(from_number)
+    wager = 'wagerbot'
+    wallet_data = createwallet(wager)
     adminkey = wallet_data['adminkey']
     print(adminkey)
-    # adminkey = '20a573f398e244dba47d2990b4e978d2'
-    payment_request = receiveinvoice(10000, 'it works!', adminkey) # in sats
-    print(payment_request)
-    input()
-    print(getbalance(adminkey))
-    spend_address = input()
-    print(payinvoice(spend_address,adminkey))

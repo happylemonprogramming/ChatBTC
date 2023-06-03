@@ -22,6 +22,7 @@ def smstext(phone_number, body, media_url):
 
 
 if __name__ == "__main__":
-  body = 'yo dude'
-  media_url = 'https://chatbtc.herokuapp.com/dev'
-  print(smstext(body, media_url=None))
+  body = 'Testing international texting'
+  phone_number = input()
+  # media_url = 'https://chatbtc.herokuapp.com/dev'
+  print(smstext(phone_number, body, media_url=None))

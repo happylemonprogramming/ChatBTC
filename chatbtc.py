@@ -10,12 +10,11 @@ ChatBTC
 chatbot
 give AI to all SMS users
 TODO: allow user to set their own prompt for bot; can be achieved via AWS Database per user
-TODO: add api with weather (important for farmers); think of ways to incorporate AI to interface with the weather based on text
-    -"what's the weather like today in  
+TODO: make sure international numbers work
 
 wallet
 give banking to all SMS users
-TODO: add whatsapp
+TODO: add discord
 TODO: add LNURL
 '''
 
@@ -73,6 +72,7 @@ def sms_reply():
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
+    print(from_number)
     num_media = int(request.values.get('NumMedia', 0))
 
     try:
@@ -89,14 +89,18 @@ def sms_reply():
     except:
         user = None
 
+    print(user, type(user), body, type(body))
+
     # Service agreement
-    if user == None and (body.lower() != 'accept' or body.lower() != "accept "):
+    if not user and str(body.lower().strip()) != 'accept':
+    # if user == None and (body.lower() != 'accept' or body.lower() != "accept "):
         # Start our TwiML response
         resp = MessagingResponse()
         reply = resp.message('Thanks for using the bot! This bot allows users to access AI and Bitcoin, but is experimental so use at your own risk. Text "accept" to acknowledge that this service is in beta and not reponsible for any lost funds or responses provided by the AI service.')
 
     # User accepts terms
-    elif type(body) is str and (body.lower() == 'accept' or body.lower() == "accept ") and user == None:
+    elif not user and str(body.lower().strip()) == 'accept':
+    # elif type(body) is str and (body.lower() == 'accept' or body.lower() == "accept ") and user == None:
         wallet_data = createwallet(from_number)
         lnbitsadmin = wallet_data['adminkey']
         save_to_dynamodb(from_number, lnbitsadmin)
@@ -104,7 +108,7 @@ def sms_reply():
         reply = resp.message('Your wallet has been created! AI chatbot unlocked! Text "commands" to learn more.')
 
     # User needs help
-    elif str(body.lower()) == 'commands' or str(body.lower()) == 'commands ':
+    elif str(body.lower().strip()) == 'commands':
         resp = MessagingResponse()
         reply = resp.message('Text anything to chat\nText "balance" to view wallet\nText "send <number> $<amount>" to transfer money\nSend image of QR code to decode\nText "$<amount>" to create invoice\nText BOLT11 invoice to decode')
 
@@ -171,7 +175,7 @@ def sms_reply():
                 reply = resp.message(f'{to_number} not in network. Text "invite" to bring friends in.')
 
     # User intends to receive funds
-    elif str(body.lower()) == "receive" or str(body.lower()) == "receive ":
+    elif str(body.lower().strip()) == 'receive':
         # Extract payee and offer amount from database
         recipient_data = get_from_dynamodb(from_number)
         payee = recipient_data['payee']
@@ -205,11 +209,14 @@ def sms_reply():
 
     # Generate lightning invoice
     elif str(body) != "" and (str(body)[0] == '$' or isinstance(body, (int, float))):
-        if str(body)[0] == '$':
+        if str(body)[0] == '$' or '.' in str(body):
             body = body[1:]
-        # Convert input into sats
-        sats = usdtobtc(body)['sats']
-        memo = 'SMS Bot'
+            # Convert input into sats
+            sats = usdtobtc(body)['sats']
+            memo = 'SMS Bot (USD)'
+        else:
+            sats = body
+            memo = 'SMS Bot (sats)'
 
         # Create receive invoice
         output = receiveinvoice(sats,memo,lnbitsadmin)
@@ -217,7 +224,7 @@ def sms_reply():
         payment_hash = output[1]
         
         # Create QR code
-        file = create_qrcode(lninvoice, filename='lightning.jpeg')
+        create_qrcode(lninvoice, filename='lightning.jpeg')
 
         # Start our TwiML response
         resp = MessagingResponse()
@@ -227,7 +234,7 @@ def sms_reply():
         # Add a picture message (.jpg, .gif)
         # Make the HEAD request
         media_url = 'https://chatbtc.herokuapp.com/dev'
-        response = requests.head(media_url)
+        requests.head(media_url)
 
         # Print the Content-Type to verify for Twilio
         # print(response.headers['Content-Type'])
@@ -235,11 +242,10 @@ def sms_reply():
 
         # Open subprocess to see if message gets paid
         subprocess.Popen(["python", "checkinvoice.py", payment_hash, from_number, str(body), lnbitsadmin])
-        # TODO: integer body reads as $100.0 instead of $100.00
         return str(resp)
     
     # Check wallet balance
-    elif body.lower() == "balance" or body.lower() == "balance ": #Autocorrect adds space
+    elif str(body.lower().strip()) == 'balance': #Autocorrect adds space
         # Get wallet balance (msats)
         balance = getbalance(lnbitsadmin)
         balance_sats = int(balance['balance']/1000)
@@ -314,7 +320,7 @@ def sms_reply():
 
     # Pay invoice
     # TODO: consider making a password so that nobody can pay but your number and password combo
-    elif str(body.lower()) == 'pay' or str(body.lower()) == 'pay ':
+    elif str(body.lower().strip()) == 'pay':
         # Get lninvoice
         item = get_from_dynamodb(from_number)
         lninvoice = item['lninvoice']
@@ -355,6 +361,126 @@ def sms_reply():
             # subprocess.Popen(["python", "chatbot.py", prompt, from_number])
             # resp = 'Thinking...' # Need these to return 'str(resp)' for higher level sms_reply() function
 
+# ##################################################################################
+    # User wants to place a bet
+    elif 'bet' in str(body.lower()):
+        # EXAMPLE: "I bet 19095555555 $5 that Heat wins the NBA Championship"
+        opponent, amount = extract_numbers_and_amounts(body)
+
+        # Add bet to database
+        update_dynamodb('wagerbot', 'bet', body)
+        update_dynamodb('wagerbot', 'amount', amount)
+        update_dynamodb('wagerbot', 'bettor', from_number)
+        update_dynamodb('wagerbot', 'opponent', '+'+opponent)
+
+        # Get bot info
+        wagerbot = get_from_dynamodb('wagerbot')
+        print(wagerbot)
+
+        # Notify opponent
+        smstext(opponent, body+"\n\nReply 'Challenge' to take on the bet", media_url=None)
+
+        # Confirmation
+        resp = MessagingResponse()
+        reply = resp.message('Opponent notified')
+
+    # Friend wants to wager
+    elif str(body.lower().strip()) == 'challenge':
+        # need to create a singular wallet with 1 set of keys
+        # money deposited there will be withdrawn at conclusion
+        # need database for: bet (string), bettor (string), challenger (list), initial amount (float), total amount (float)
+        # if from_number not in challenger list: add them, invoice involved parties from singular wallet
+
+        # Get bot info
+        wagerbot = get_from_dynamodb('wagerbot')
+        print(wagerbot)
+        if wagerbot['opponent'] == from_number:         
+            # Create receive invoice
+            lnbitsadmin = wagerbot['lnbitsadmin']
+            amountUSD = wagerbot['amount']
+            bet = wagerbot['bet']
+            satsamount = usdtobtc(amountUSD)['sats']  # Convert dollars to sats
+
+            # Invoice for Opponent
+            output1 = receiveinvoice(satsamount,bet,lnbitsadmin)
+            lninvoice1 = output1[0]
+            payment_hash1 = output1[1]
+            # Start our TwiML response
+            resp = MessagingResponse()
+            # Send lightning invoice
+            reply = resp.message(lninvoice1)
+            # Open subprocess to see if message gets paid
+            subprocess.Popen(["python", "checkinvoice.py", payment_hash1, from_number, amountUSD, lnbitsadmin])
+
+            # Invoice for Bettor
+            output2 = receiveinvoice(satsamount,bet,lnbitsadmin)
+            lninvoice2 = output2[0]
+            payment_hash2 = output2[1]
+            # Notify bettor
+            bettor = wagerbot['bettor']
+            smstext(bettor, lninvoice2, media_url=None)
+            # Open subprocess to see if message gets paid
+            subprocess.Popen(["python", "checkinvoice.py", payment_hash2, bettor, amountUSD, lnbitsadmin])
+        else:
+            # Limit to 1 bet for now
+            resp = MessagingResponse()
+            reply = resp.message('Challenge unavailable')
+
+
+    # TODO need to define homies prior
+    elif str(body.lower()) == 'defeat':
+        # Get bot info
+        wagerbot = get_from_dynamodb('wagerbot')
+        bet = wagerbot['bet']
+        opponent = wagerbot['opponent']
+        # Get wallet balance (msats)
+        balance = getbalance(lnbitsadmin)
+        balance_sats = int(balance['balance']/1000)
+
+        if wagerbot['bettor'] == from_number:
+            # Bettor lost and must pay opponent
+            # Generate invoice for opponent for full wallet amount less fees
+            fees = 500
+            item = get_from_dynamodb(opponent)
+            opponentkeys = item['lnbitsadmin']
+            output = receiveinvoice(balance_sats-fees,bet,opponentkeys)
+            lninvoice = output[0]
+            payment_hash = output[1]
+            # Pay using wagerbot keys
+            wagerbotkeys = wagerbot['lnbitsadmin']
+            # Open subprocess to pay
+            subprocess.Popen(["python", "payinvoice.py", lninvoice, wagerbotkeys, opponent])
+            status = 'Your winnings are on their way!'
+
+            # Start our TwiML response
+            resp = MessagingResponse()
+            reply = resp.message(status)
+        else:
+            # Bettor won and opponent must pay
+            # Bettor lost and must pay opponent
+            # Generate invoice for opponent for full wallet amount less fees
+            fees = 500
+            item = get_from_dynamodb(from_number)
+            bettorkeys = item['lnbitsadmin']
+            output = receiveinvoice(balance_sats-fees,bet,bettorkeys)
+            lninvoice = output[0]
+            payment_hash = output[1]
+            # Pay using wagerbot keys
+            wagerbotkeys = wagerbot['lnbitsadmin']
+            # Open subprocess to pay
+            subprocess.Popen(["python", "payinvoice.py", lninvoice, wagerbotkeys, opponent])
+            status = 'Your winnings are on their way!'
+
+            # Start our TwiML response
+            resp = MessagingResponse()
+            reply = resp.message(status)
+
+
+        # need to check bet database to see what bet they are in
+        # what if they are in multiple bets? maybe search keywords to compare body to the bet?
+        # if person in bet and keywords match bet and consensus, then distribute funds
+
+##################################################################################
     # All else assumes prompt for bot
     else:
         # Open subprocess to allow ChatGPT time to think
