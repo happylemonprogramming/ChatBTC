@@ -72,8 +72,11 @@ def receiveinvoice(amount, memo, api_key):
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
-    payment_request = response.json()['payment_request']
-    payment_hash = response.json()['payment_hash']
+    try:
+        payment_request = response.json()['payment_request']
+        payment_hash = response.json()['payment_hash']
+    except:
+        payment_request, payment_hash = response.json()
 
     return payment_request, payment_hash
 

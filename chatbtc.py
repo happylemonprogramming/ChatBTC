@@ -371,14 +371,14 @@ def sms_reply():
         update_dynamodb('wagerbot', 'bet', body)
         update_dynamodb('wagerbot', 'amount', amount)
         update_dynamodb('wagerbot', 'bettor', from_number)
-        update_dynamodb('wagerbot', 'opponent', '+'+opponent)
+        update_dynamodb('wagerbot', 'opponent', opponent)
 
         # Get bot info
         wagerbot = get_from_dynamodb('wagerbot')
         print(wagerbot)
 
         # Notify opponent
-        smstext(opponent, body+"\n\nReply 'Challenge' to take on the bet", media_url=None)
+        smstext(opponent, f"{body}\n\nReply 'Challenge' to take on the bet against {from_number}", media_url=None)
 
         # Confirmation
         resp = MessagingResponse()
@@ -405,10 +405,13 @@ def sms_reply():
             output1 = receiveinvoice(satsamount,bet,lnbitsadmin)
             lninvoice1 = output1[0]
             payment_hash1 = output1[1]
+            
             # Start our TwiML response
             resp = MessagingResponse()
             # Send lightning invoice
             reply = resp.message(lninvoice1)
+            # Send instruction
+            smstext(from_number, f"Deposit wager at address to play", media_url=None)
             # Open subprocess to see if message gets paid
             subprocess.Popen(["python", "checkinvoice.py", payment_hash1, from_number, amountUSD, lnbitsadmin])
 
@@ -418,7 +421,10 @@ def sms_reply():
             payment_hash2 = output2[1]
             # Notify bettor
             bettor = wagerbot['bettor']
+            # Send lightning invoice
             smstext(bettor, lninvoice2, media_url=None)
+            # Send instruction
+            smstext(bettor, f"Deposit wager at address to play", media_url=None)
             # Open subprocess to see if message gets paid
             subprocess.Popen(["python", "checkinvoice.py", payment_hash2, bettor, amountUSD, lnbitsadmin])
         else:
@@ -428,52 +434,64 @@ def sms_reply():
 
 
     # TODO need to define homies prior
-    elif str(body.lower()) == 'defeat':
+    elif str(body.lower().strip()) == 'defeat':
         # Get bot info
         wagerbot = get_from_dynamodb('wagerbot')
         bet = wagerbot['bet']
         opponent = wagerbot['opponent']
+        wagerbotkeys = wagerbot['lnbitsadmin']
+        bettor = wagerbot['bettor']
         # Get wallet balance (msats)
-        balance = getbalance(lnbitsadmin)
+        balance = getbalance(wagerbotkeys)
         balance_sats = int(balance['balance']/1000)
+        print(f'wagerbot balance: {balance_sats} sats')
+        fees = 500
+        withdraw_amount = int(balance_sats-fees)
+        print(f'withdrawal: {withdraw_amount} sats')
 
-        if wagerbot['bettor'] == from_number:
+        # If bettor admits defeat
+        if from_number == bettor:
             # Bettor lost and must pay opponent
             # Generate invoice for opponent for full wallet amount less fees
-            fees = 500
             item = get_from_dynamodb(opponent)
             opponentkeys = item['lnbitsadmin']
-            output = receiveinvoice(balance_sats-fees,bet,opponentkeys)
+            output = receiveinvoice(withdraw_amount,bet,opponentkeys)
             lninvoice = output[0]
             payment_hash = output[1]
-            # Pay using wagerbot keys
-            wagerbotkeys = wagerbot['lnbitsadmin']
+
             # Open subprocess to pay
-            subprocess.Popen(["python", "payinvoice.py", lninvoice, wagerbotkeys, opponent])
-            status = 'Your winnings are on their way!'
+            subprocess.Popen(["python", "payinvoice.py", lninvoice, wagerbotkeys, bettor])
+            status = 'Better luck next time, loser'
 
             # Start our TwiML response
             resp = MessagingResponse()
             reply = resp.message(status)
-        else:
-            # Bettor won and opponent must pay
-            # Bettor lost and must pay opponent
+            smstext(opponent, 'Your winnings are on the way!', media_url=None)
+
+        # If challenger admits defeat
+        elif from_number == opponent:
+            # Opponent lost and must pay bettor
             # Generate invoice for opponent for full wallet amount less fees
-            fees = 500
             item = get_from_dynamodb(from_number)
             bettorkeys = item['lnbitsadmin']
-            output = receiveinvoice(balance_sats-fees,bet,bettorkeys)
+            output = receiveinvoice(withdraw_amount,bet,bettorkeys)
             lninvoice = output[0]
             payment_hash = output[1]
-            # Pay using wagerbot keys
-            wagerbotkeys = wagerbot['lnbitsadmin']
+
             # Open subprocess to pay
             subprocess.Popen(["python", "payinvoice.py", lninvoice, wagerbotkeys, opponent])
-            status = 'Your winnings are on their way!'
+            status = 'Better luck next time, loser'
 
             # Start our TwiML response
             resp = MessagingResponse()
             reply = resp.message(status)
+            smstext(bettor, 'Your winnings are on the way!', media_url=None)
+
+        # If another number attempts to text
+        else:
+            # Start our TwiML response
+            resp = MessagingResponse()
+            reply = resp.message('No bets active')
 
 
         # need to check bet database to see what bet they are in
