@@ -472,7 +472,7 @@ def sms_reply():
         elif from_number == opponent:
             # Opponent lost and must pay bettor
             # Generate invoice for opponent for full wallet amount less fees
-            item = get_from_dynamodb(from_number)
+            item = get_from_dynamodb(bettor)
             bettorkeys = item['lnbitsadmin']
             output = receiveinvoice(withdraw_amount,bet,bettorkeys)
             lninvoice = output[0]
