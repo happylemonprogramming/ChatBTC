@@ -70,10 +70,15 @@ def development():
 def sms_reply():
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
-    from_number = request.values.get('From', None)
     num_media = int(request.values.get('NumMedia', 0))
+    
+    # Get user number
+    from_number = request.values.get('From', None)
+    
+    # Get wagerbot data
     wagerbot = get_from_dynamodb('wagerbot')
 
+    # Manage types
     try:
         body = float(body)
     except:
@@ -88,6 +93,7 @@ def sms_reply():
     except:
         user = None
 
+    # Heroku prints
     print(user, type(user), body, type(body))
 
     # Service agreement
@@ -403,6 +409,11 @@ def sms_reply():
             # Confirmation
             resp = MessagingResponse()
             reply = resp.message('Opponent notified \U00002705')
+
+    # Create a username
+    elif 'codename:' in str(body.lower()):
+        # Add to database
+        update_dynamodb(from_number, 'codename', body[0:9])
 
     # Opponent wants to wager
     elif 'wager' in str(body.lower()):
