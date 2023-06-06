@@ -68,11 +68,11 @@ def development():
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
-    start = time.time()
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
     from_number = request.values.get('From', None)
     num_media = int(request.values.get('NumMedia', 0))
+    wagerbot = get_from_dynamodb('wagerbot')
 
     try:
         body = float(body)
@@ -377,12 +377,71 @@ def sms_reply():
         wagerbot = get_from_dynamodb('wagerbot')
         print(wagerbot)
 
+        # # Notify opponent
+        # smstext(opponent, f"{body}\n\nReply 'Challenge' to take on the bet against {from_number}", media_url=None)
+
         # Notify opponent
-        smstext(opponent, f"{body}\n\nReply 'Challenge' to take on the bet against {from_number}", media_url=None)
+        smstext(opponent, f"{body}\n\nReply 'Wager ${amount}' to take on the bet against {from_number}", media_url=None)
 
         # Confirmation
         resp = MessagingResponse()
         reply = resp.message('Opponent notified')
+
+    # Friend wants to wager
+    elif 'wager$' in str(body.lower().strip()):
+        
+        # If user is opponent
+        if wagerbot['opponent'] == from_number:         
+            # Bot information from database
+            botkeys = wagerbot['lnbitsadmin']
+            amountUSD = wagerbot['amount']
+            bet = wagerbot['bet']
+            
+            # Conversion
+            satsamount = usdtobtc(amountUSD)['sats']  # Convert dollars to sats
+
+            # Invoice from Wagerbot for Opponent
+            output1 = receiveinvoice(satsamount,bet,botkeys)
+            lninvoice1 = output1[0]
+            payment_hash1 = output1[1]
+
+            # Get opponent keys to pay invoice
+            user = get_from_dynamodb(from_number)
+            opponentkeys = user['lnbitsadmin']
+
+            # Opponent pay invoice
+            subprocess.Popen(["python", "payinvoice.py", lninvoice1, opponentkeys, from_number])
+
+            # Send confirmation
+            resp = MessagingResponse()
+            reply = resp.message('CHALLENGE ACCEPTED! \U0001F525') # fire emoji
+
+            # Open subprocess to see if message gets paid
+            subprocess.Popen(["python", "checkinvoice.py", payment_hash1, from_number, amountUSD, botkeys])
+
+
+            # Invoice from Bot for Bettor
+            output2 = receiveinvoice(satsamount,bet,botkeys)
+            lninvoice2 = output2[0]
+            payment_hash2 = output2[1]
+
+            # Get bettor keys to pay invoice
+            bettor_number = wagerbot['bettor']
+            bettor = get_from_dynamodb(bettor_number)
+            bettorkeys = user['lnbitsadmin']
+
+            # Bettor pay invoice
+            subprocess.Popen(["python", "payinvoice.py", lninvoice2, bettorkeys, bettor_number])
+
+            # Notify Bettor
+            smstext(bettor_number,'CHALLENGE ACCEPTED! \U0001F525', media_url=None)
+
+            # Double check invoice is paid
+            subprocess.Popen(["python", "checkinvoice.py", payment_hash2, bettor_number, amountUSD, botkeys])
+        else:
+            # Limit to 1 bet for now
+            resp = MessagingResponse()
+            reply = resp.message('Challenge unavailable')
 
     # Friend wants to wager
     elif str(body.lower().strip()) == 'challenge':
